@@ -2,9 +2,9 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.2.0)
+## Interfaz visual local (0.3.0)
 
-La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, y guardar los informes JSON. No necesita navegador, cuenta, servidor ni pago.
+La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
 ```bash
 python -m reverse_lab.gui
@@ -24,6 +24,30 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Diagnóstico local de LIEF, Ghidra, Rizin, Cutter y angr (sin instalarlos).
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
 - Pruebas unitarias sin motores externos y workflow CI.
+
+## Comparación de informes y explicación local
+
+Para comparar dos informes JSON guardados:
+
+```bash
+python -m reverse_lab.report_cli compare antes.json despues.json --format text
+python -m reverse_lab.report_cli compare antes.json despues.json --output diferencia.json
+```
+
+Para una interpretación técnica sin modelo de lenguaje:
+
+```bash
+python -m reverse_lab.report_cli explain informe.json
+```
+
+Para una explicación generativa **optativa y solo local** instala Ollama y descarga `qwen2.5:3b`:
+
+```bash
+ollama pull qwen2.5:3b
+python -m reverse_lab.report_cli explain informe.json --ollama
+```
+
+El conector envía únicamente metadatos resumidos al servicio local de Ollama, nunca binarios ni código descompilado. No es una conexión con ChatGPT y el modelo puede equivocarse. Ver [guía de comparaciones](docs/COMPARE.md) y [guía de IA local](docs/AI_LOCAL.md).
 
 ## Inicio rápido (Python 3.10+)
 

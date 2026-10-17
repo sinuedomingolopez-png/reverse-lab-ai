@@ -13,6 +13,16 @@ py -m venv .venv
 .\.venv\Scripts\python.exe -m reverse_lab.doctor
 ```
 
+## Abrir la interfaz visual
+
+Desde PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m reverse_lab.gui
+```
+
+O haz doble clic en `start-reverse-lab.bat`, que utilizará el Python del entorno `.venv` cuando exista. Sin dependencias adicionales para el modo básico. Consulta [la guía de la interfaz](GUI.md).
+
 ## Analizador básico (sin dependencias de terceros)
 
 ```powershell

@@ -16,3 +16,6 @@ reverse-lab = "reverse_lab.cli:main"
 
 [tool.setuptools.package-data]
 reverse_lab = ["ghidra_scripts/*.java"]
+
+[project.gui-scripts]
+reverse-lab-gui = "reverse_lab.gui:main"

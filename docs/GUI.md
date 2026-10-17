@@ -16,6 +16,10 @@ reverse-lab-gui
 
 En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-reverse-lab.bat**. La interfaz no envía archivos a internet, no levanta un servidor y no necesita cuenta de pago.
 
+## Comparación e interpretación
+
+Desde la ventana principal, pulsa **Comparar JSON** para elegir dos informes guardados. Pulsa **Explicar** para generar un resumen factual sin IA. Desde ese resumen puedes elegir **Explicar mediante IA local (Ollama)**; se solicitará confirmación y el modelo debe estar instalado en tu ordenador. Consulta [COMPARE.md](COMPARE.md) y [AI_LOCAL.md](AI_LOCAL.md).
+
 ## Uso
 
 1. Pulsa **Examinar** y selecciona un archivo que tengas permiso para analizar.

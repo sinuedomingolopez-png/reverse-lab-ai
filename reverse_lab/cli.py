@@ -3,40 +3,32 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 
-from .analyzer import inspect_file
+from .workflow import BACKENDS, analyze
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Inspect binary files without executing them")
     parser.add_argument("file", type=Path, help="File to inspect")
-    parser.add_argument("--backend", choices=("basic", "lief", "rizin", "ghidra"), default="basic")
+    parser.add_argument("--backend", choices=BACKENDS, default="basic")
     parser.add_argument("--output", type=Path, help="Optional JSON report destination")
     parser.add_argument("--rizin-executable", default="rz-bin", help="Path to rz-bin (Rizin backend)")
     parser.add_argument("--ghidra-headless", help="Path to analyzeHeadless launcher (Ghidra backend)")
     parser.add_argument("--timeout", type=int, default=180, help="Backend timeout in seconds")
-    parser.add_argument("--export-functions", action="store_true", help="Ghidra: export function names and entry addresses")
+    parser.add_argument("--export-functions", action="store_true", help="Ghidra: export names and entry addresses")
     args = parser.parse_args(argv)
 
     if args.backend == "ghidra" and not args.ghidra_headless:
         parser.error("--ghidra-headless is required for Ghidra")
-    report = inspect_file(args.file)
-    if args.backend == "lief":
-        from .integrations.lief_adapter import inspect_with_lief
-        report["analysis"] = inspect_with_lief(args.file)
-    elif args.backend == "rizin":
-        from .integrations.rizin_adapter import inspect_with_rizin
-        report["analysis"] = inspect_with_rizin(
-            args.file, executable=args.rizin_executable, timeout=args.timeout
-        )
-    elif args.backend == "ghidra":
-        from .integrations.ghidra_adapter import analyze_with_ghidra
-        report["analysis"] = analyze_with_ghidra(
-            args.file, args.ghidra_headless, timeout=args.timeout,
-            export_functions=args.export_functions,
-        )
+    report = analyze(
+        args.file, backend=args.backend,
+        rizin_executable=args.rizin_executable,
+        ghidra_headless=args.ghidra_headless,
+        timeout=args.timeout,
+        export_functions=args.export_functions,
+    )
     document = json.dumps(report, indent=2, ensure_ascii=False)
     if args.output:
         args.output.write_text(document + "\n", encoding="utf-8")

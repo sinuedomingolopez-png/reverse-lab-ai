@@ -9,6 +9,7 @@ import json
 from collections.abc import Mapping
 
 from .workflow import analyze, BACKENDS
+from . import report_gui
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -130,6 +131,8 @@ def main() -> None:
             self.save_button = ttk.Button(actions, text="Guardar JSON", command=self.save_report, state="disabled")
             self.save_button.pack(side="left", padx=10)
             ttk.Button(actions, text="Comprobar herramientas", command=self.check_tools).pack(side="left")
+            ttk.Button(actions, text="Comparar JSON", command=lambda: report_gui.compare_saved_reports(self.root)).pack(side="left", padx=(6, 0))
+            ttk.Button(actions, text="Explicar", command=lambda: report_gui.explain_current_report(self.root, self.report)).pack(side="left", padx=(6, 0))
             self.progress = ttk.Progressbar(actions, mode="indeterminate", length=145)
             self.progress.pack(side="right", padx=(10, 0))
             ttk.Label(container, textvariable=self.status_var, style="Sub.TLabel").pack(anchor="w", pady=(1, 10))

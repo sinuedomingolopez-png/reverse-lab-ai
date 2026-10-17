@@ -2,6 +2,18 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
+## Interfaz visual local (0.2.0)
+
+La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, y guardar los informes JSON. No necesita navegador, cuenta, servidor ni pago.
+
+```bash
+python -m reverse_lab.gui
+```
+
+En Windows puedes hacer doble clic en `start-reverse-lab.bat` desde la carpeta clonada. Si existe `.venv`, se utilizará su Python. Consulta la [guía de la interfaz gráfica](docs/GUI.md).
+
+La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Windows con herramientas reales instaladas.
+
 ## Funciones implementadas
 
 - Identificación básica de archivos PE (posible), ELF, Mach-O (posible), WebAssembly y ZIP.
@@ -10,6 +22,7 @@ Laboratorio gratuito y extensible de ingeniería inversa local, con análisis es
 - Adaptador Rizin con `rz-bin -Ij` para metadatos JSON (requiere Rizin).
 - Adaptador Ghidra headless (requiere Ghidra) y exportador experimental de nombres y direcciones de funciones.
 - Diagnóstico local de LIEF, Ghidra, Rizin, Cutter y angr (sin instalarlos).
+- Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
 - Pruebas unitarias sin motores externos y workflow CI.
 
 ## Inicio rápido (Python 3.10+)

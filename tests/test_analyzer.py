@@ -8,9 +8,9 @@ from reverse_lab.analyzer import detect_format, inspect_file
 
 class AnalyzerTests(unittest.TestCase):
     def test_recognizes_formats(self):
-        self.assertEqual(detect_format(b"\\x7fELF"+b"\\x00"*12), "ELF")
-        self.assertEqual(detect_format(b"\\x00asm"+b"\\x01"*12), "WebAssembly")
-        self.assertEqual(detect_format(b"PK\\x03\\x04"), "ZIP")
+        self.assertEqual(detect_format(bytes.fromhex("7f454c46") + bytes(12)), "ELF")
+        self.assertEqual(detect_format(bytes.fromhex("0061736d") + bytes(12)), "WebAssembly")
+        self.assertEqual(detect_format(bytes.fromhex("504b0304")), "ZIP")
 
     def test_unknown(self):
         self.assertEqual(detect_format(b"plain text"), "unknown")

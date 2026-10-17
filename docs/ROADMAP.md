@@ -9,6 +9,8 @@
 - Diagnóstico local de motores y pruebas unitarias.
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
+- Comparador de informes JSON con cambios de firmas, tamaño, motores y listas de funciones.
+- Interpretación determinista sin IA y conector opcional de IA mediante Ollama local, sin enviar binarios.
 
 ## Siguiente fase: validación en herramientas reales
 - Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
@@ -20,7 +22,8 @@
 - Conector Cutter como aplicación visual externa.
 - angr en un contenedor o máquina virtual para análisis simbólico controlado.
 - Mejorar la interfaz con comparación lado a lado de informes, historial local y una vista interactiva de funciones.
-- Capa IA con revisión humana de resultados y límites de privacidad.
+- Mejorar la explicación con IA: permitir revisión humana de fragmentos de pseudocódigo autorizados, manteniendo la privacidad.
+- Conexión con ChatGPT/Codex a través de permisos explícitos (no está implementada).
 
 ## Política técnica
 Solo analizar software autorizado. No ejecutar binarios objetivo. Mantener motores opcionales y revisar sus licencias. Los nombres, funciones y fragmentos recuperados de binarios deben tratarse como datos no confiables.

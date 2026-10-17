@@ -17,6 +17,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--rizin-executable", default="rz-bin", help="Path to rz-bin (Rizin backend)")
     parser.add_argument("--ghidra-headless", help="Path to analyzeHeadless launcher (Ghidra backend)")
     parser.add_argument("--timeout", type=int, default=180, help="Backend timeout in seconds")
+    parser.add_argument("--export-functions", action="store_true", help="Ghidra: export function names and entry addresses")
     args = parser.parse_args(argv)
 
     if args.backend == "ghidra" and not args.ghidra_headless:
@@ -33,7 +34,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     elif args.backend == "ghidra":
         from .integrations.ghidra_adapter import analyze_with_ghidra
         report["analysis"] = analyze_with_ghidra(
-            args.file, args.ghidra_headless, timeout=args.timeout
+            args.file, args.ghidra_headless, timeout=args.timeout,
+            export_functions=args.export_functions,
         )
     document = json.dumps(report, indent=2, ensure_ascii=False)
     if args.output:

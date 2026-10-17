@@ -13,3 +13,6 @@ include = ["reverse_lab*"]
 
 [project.scripts]
 reverse-lab = "reverse_lab.cli:main"
+
+[tool.setuptools.package-data]
+reverse_lab = ["ghidra_scripts/*.java"]

@@ -1,4 +1,4 @@
-"""Minimal, safe static file analyzer."""
+"""Safe static file inspection, without executing the target."""
 from __future__ import annotations
 
 import hashlib
@@ -6,13 +6,13 @@ from pathlib import Path
 
 
 def detect_format(header: bytes) -> str:
-    if header.startswith(b"\\x7fELF"):
+    if header.startswith(bytes.fromhex("7f454c46")):
         return "ELF"
     if header.startswith(b"MZ"):
         return "PE (possible)"
-    if header.startswith(b"\\x00asm"):
+    if header.startswith(bytes.fromhex("0061736d")):
         return "WebAssembly"
-    if header.startswith(b"PK\\x03\\x04"):
+    if header.startswith(bytes.fromhex("504b0304")):
         return "ZIP"
     if header[:4] in (
         bytes.fromhex("feedface"), bytes.fromhex("cefaedfe"),

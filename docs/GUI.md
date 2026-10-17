@@ -4,15 +4,15 @@
 
 Con Python 3.10+ y Tkinter disponible:
 
-\`\`\`bash
+```bash
 python -m reverse_lab.gui
-\`\`\`
+```
 
-Alternativamente, instala el paquete (\`python -m pip install -e .\`) y lanza:
+Alternativamente, instala el paquete (`python -m pip install -e .`) y lanza:
 
-\`\`\`bash
+```bash
 reverse-lab-gui
-\`\`\`
+```
 
 En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-reverse-lab.bat**. La interfaz no envía archivos a internet, no levanta un servidor y no necesita cuenta de pago.
 
@@ -20,7 +20,7 @@ En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-rever
 
 1. Pulsa **Examinar** y selecciona un archivo que tengas permiso para analizar.
 2. Elige **basic**, **lief**, **rizin** o **ghidra**.
-3. Para Rizin, configura la ruta a \`rz-bin\`; para Ghidra, configura la ruta al lanzador \`analyzeHeadless\`.
+3. Para Rizin, configura la ruta a `rz-bin`; para Ghidra, configura la ruta al lanzador `analyzeHeadless`.
 4. Pulsa **Analizar archivo**. Los análisis se ejecutan en un hilo de trabajo para que la ventana no se bloquee.
 5. Consulta **Resumen**, **Funciones** o **JSON**, y guarda el informe JSON si lo necesitas.
 
@@ -28,14 +28,14 @@ En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-rever
 
 ## Componentes opcionales
 
-- LIEF: \`python -m pip install lief\`
+- LIEF: `python -m pip install lief`
 - Rizin: https://github.com/rizinorg/rizin/releases
 - Ghidra: https://github.com/NationalSecurityAgency/ghidra/releases
 - Cutter y angr: pendientes de conectar a la interfaz
 
 ### Limitaciones verificadas
 
-Las pruebas automáticas validan el tratamiento de los resultados y la coordinación entre módulos. No comprueban la ventana real en Windows ni instalan motores externos. Ghidra con \`.bat\` en Windows requiere una prueba práctica: el lanzador puede comportarse de modo diferente según la versión y el entorno.
+Las pruebas automáticas validan el tratamiento de los resultados y la coordinación entre módulos. No comprueban la ventana real en Windows ni instalan motores externos. Ghidra con `.bat` en Windows requiere una prueba práctica: el lanzador puede comportarse de modo diferente según la versión y el entorno.
 
 ### Privacidad y seguridad
 

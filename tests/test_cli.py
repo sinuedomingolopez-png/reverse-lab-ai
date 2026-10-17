@@ -48,3 +48,9 @@ class CliTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 main([str(self.target), '--backend', 'lief'])
         analyze.assert_called_once()
+
+    def test_ghidra_function_export_option(self):
+        with patch('reverse_lab.integrations.ghidra_adapter.analyze_with_ghidra', return_value={'backend': 'ghidra', 'success': True}) as analyze:
+            with contextlib.redirect_stdout(io.StringIO()):
+                main([str(self.target), '--backend', 'ghidra', '--ghidra-headless', 'launcher', '--export-functions'])
+        self.assertTrue(analyze.call_args.kwargs['export_functions'])

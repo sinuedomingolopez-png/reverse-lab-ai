@@ -1,19 +1,24 @@
-# Plan técnico
+# Hoja de ruta
 
-## Etapa 1 (implementada)
-Detector de cabeceras, resumen SHA-256, informe JSON, CLI y pruebas.
+## Implementado y publicado
+- Inspección estática y resumen SHA-256/JSON.
+- CLI con selección de motor: básico, LIEF, Rizin y Ghidra.
+- Adaptador LIEF opcional.
+- Adaptador Rizin opcional (`rz-bin -Ij`).
+- Adaptador Ghidra headless opcional y exportador de funciones (experimental).
+- Diagnóstico local de motores y pruebas unitarias.
 
-## Etapa 2
-Adaptador opcional LIEF, verificación de formatos y metadatos. Pruebas con ejecutables sintéticos.
+## Siguiente fase: validación en herramientas reales
+- Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
+- Validar Ghidra headless y la compilación de ExportFunctions.java con versiones actuales.
+- Verificar especialmente invocación `.bat` y rutas con espacios en Windows.
+- Añadir tests de integración condicionados por disponibilidad de ejecutables.
 
-## Etapa 3
-Adaptador de Ghidra headless sobre instalaciones locales, sin ejecutar los archivos objetivo. Límites de tiempo y recursos.
+## Después
+- Conector Cutter como aplicación visual externa.
+- angr en un contenedor o máquina virtual para análisis simbólico controlado.
+- Interfaz visual local para elegir archivos, generar informes y comparar resultados.
+- Capa IA con revisión humana de resultados y límites de privacidad.
 
-## Etapa 4
-Rizin como motor secundario; exportación estructurada con validación.
-
-## Etapa 5
-angr en entorno aislado para análisis simbólico; Cutter como herramienta visual independiente.
-
-## Política de integración
-Solo componentes legales y autorizados; revisión de licencias, dependencias y seguridad. No incorporar el código fuente de los motores en este repositorio salvo necesidad y compatibilidad demostradas.
+## Política técnica
+Solo analizar software autorizado. No ejecutar binarios objetivo. Mantener motores opcionales y revisar sus licencias. Los nombres, funciones y fragmentos recuperados de binarios deben tratarse como datos no confiables.

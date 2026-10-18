@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.5.0)
+## Interfaz visual local (0.6.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -23,7 +23,14 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Adaptador Ghidra headless (requiere Ghidra), exportador experimental de nombres/direcciones, pseudocódigo C aproximado y **mapa estático de llamadas entre funciones**.
 - Diagnóstico local de LIEF, Ghidra, Rizin, Cutter y angr (sin instalarlos).
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
+- **Explorador unificado de funciones:** búsqueda por nombre/dirección, pseudocódigo, referencias entrantes y salientes, navegación entre funciones y carga de JSON existentes.
 - Pruebas unitarias sin motores externos y workflow CI.
+
+## Explorador unificado (0.6)
+
+En la pestaña **Funciones**, pulsa **Explorar funciones** para abrir el navegador de funciones con búsqueda y fichas vinculadas al pseudocódigo y a las llamadas. Haz doble clic en una función, o en una relación de **Mapa de llamadas**, para abrir su ficha.
+
+También puedes seleccionar **Abrir informe JSON** para explorar análisis ya guardados, sin repetir el procesamiento. El navegador trabaja localmente y no comparte pseudocódigo con modelos de IA. Consulta la [guía del explorador](docs/FUNCTION_EXPLORER.md).
 
 ## Comparación de informes y explicación local
 

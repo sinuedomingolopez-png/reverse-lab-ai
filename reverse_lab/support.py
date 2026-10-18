@@ -64,7 +64,7 @@ def collect_diagnostics(
         "tools_status": status,
         "tools": tools,
         "bundle": {"status": safe_state, "ghidra_script_count": scripts},
-        "privacy": "Only allowlisted local capability statuses; no personal files or paths",
+        "privacy": "Only allowlisted local capability statuses; no private data",
     }
 
 

@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from .workflow import analyze, BACKENDS
 from .call_graph import extract_call_edges, outgoing_calls, build_dot
 from . import report_gui, function_explorer_gui
+from .reports import load_report
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -167,6 +168,8 @@ def main() -> None:
                       style="Panel.TLabel").pack(side="left")
             ttk.Button(function_header, text="Explorar funciones",
                        command=self.open_function_explorer).pack(side="right")
+            ttk.Button(function_header, text="Abrir informe JSON",
+                       command=self.open_saved_function_report).pack(side="right", padx=(0, 8))
             self.functions = ttk.Treeview(functions_page, columns=("name", "entry"), show="headings")
             self.functions.heading("name", text="FUNCIÓN")
             self.functions.heading("entry", text="DIRECCIÓN DE ENTRADA")
@@ -398,6 +401,22 @@ def main() -> None:
                 messagebox.showerror("Error al exportar mapa", str(exc))
                 return
             self.status_var.set("Mapa DOT guardado en " + path)
+
+        def open_saved_function_report(self):
+            path = filedialog.askopenfilename(title="Abrir informe Reverse Lab AI",
+                                               filetypes=[("Archivo JSON", "*.json")])
+            if not path:
+                return
+            try:
+                report = load_report(path)
+            except (ValueError, OSError) as exc:
+                messagebox.showerror("Informe inválido", str(exc))
+                return
+            self.report = report
+            self.save_button.configure(state="normal")
+            self.display(report)
+            self.status_var.set("Informe local cargado · " + report["filename"])
+            self.open_function_explorer()
 
         def open_function_explorer(self, initial_entry=None):
             function_explorer_gui.open_function_explorer(

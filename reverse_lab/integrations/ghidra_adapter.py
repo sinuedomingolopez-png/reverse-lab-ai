@@ -39,6 +39,13 @@ def _pseudocode_entry(item: object) -> bool:
              or isinstance(item.get("error"), str)))
 
 
+def _call_edge(item: object) -> bool:
+    """Require source and destination nodes with untrusted display-only text."""
+    return (isinstance(item, dict) and
+            _function_entry(item.get("caller")) and
+            _function_entry(item.get("callee")))
+
+
 def _windows_batch_args_safe(command: list[str]) -> bool:
     """Refuse shell-sensitive characters in paths passed to Windows batch launchers."""
     forbidden = '&|<>^%!\r\n'
@@ -56,6 +63,9 @@ def analyze_with_ghidra(
     pseudocode_max_functions: int = 20,
     pseudocode_max_chars: int = 8000,
     pseudocode_timeout: int = 10,
+    export_call_graph: bool = False,
+    call_graph_max_callers: int = 200,
+    call_graph_max_edges: int = 2000,
 ) -> dict:
     if not 1 <= timeout <= 3600:
         raise ValueError("timeout must be between 1 and 3600 seconds")
@@ -68,6 +78,11 @@ def analyze_with_ghidra(
     if not 1 <= pseudocode_timeout <= 30:
         raise ValueError("pseudocode_timeout must be between 1 and 30 seconds")
 
+    if not 1 <= call_graph_max_callers <= 500:
+        raise ValueError("call_graph_max_callers must be between 1 and 500")
+    if not 1 <= call_graph_max_edges <= 5000:
+        raise ValueError("call_graph_max_edges must be between 1 and 5000")
+
     target_path = Path(target).resolve(strict=True)
     runner = Path(analyze_headless).resolve(strict=True)
     if not target_path.is_file() or not runner.is_file():
@@ -76,7 +91,7 @@ def analyze_with_ghidra(
     with tempfile.TemporaryDirectory(prefix="reverse-lab-ghidra-") as project_dir:
         command = [str(runner), project_dir, "ReverseLab", "-import", str(target_path)]
         script_dir = Path(__file__).resolve().parents[1] / "ghidra_scripts"
-        if export_functions or export_pseudocode:
+        if export_functions or export_pseudocode or export_call_graph:
             command += ["-scriptPath", str(script_dir)]
 
         outputs: list[tuple[str, Path, int, object]] = []
@@ -94,6 +109,13 @@ def analyze_with_ghidra(
                         str(pseudocode_max_functions), str(pseudocode_max_chars),
                         str(pseudocode_timeout)]
             outputs.append(("pseudocode", out, 2 * 1024 * 1024, _pseudocode_entry))
+        if export_call_graph:
+            if not (script_dir / "ExportCallGraph.java").is_file():
+                raise RuntimeError("Missing Ghidra ExportCallGraph.java script")
+            out = Path(project_dir) / "call_graph.json"
+            command += ["-postScript", "ExportCallGraph.java", str(out),
+                        str(call_graph_max_callers), str(call_graph_max_edges)]
+            outputs.append(("call_graph", out, 2 * 1024 * 1024, _call_edge))
         command += ["-analysisTimeoutPerFile", str(min(timeout, 1800)), "-deleteProject"]
 
         # Windows .bat/.cmd scripts are processed by cmd.exe. Validate all
@@ -130,8 +152,12 @@ def analyze_with_ghidra(
                     len(item.get("pseudocode", "")) > pseudocode_max_chars for item in items
                 ):
                     raise ValueError("Ghidra pseudocode export exceeds character limit")
+                if name == "call_graph" and len(items) > call_graph_max_edges:
+                    raise ValueError("Ghidra call graph exceeds edge limit")
                 report[name] = items
-                report["function_count" if name == "functions" else "pseudocode_count"] = len(items)
+                key = {"functions": "function_count", "pseudocode": "pseudocode_count",
+                       "call_graph": "call_graph_count"}[name]
+                report[key] = len(items)
             except (OSError, ValueError) as exc:
                 report["success"] = False
                 report["error"] = f"Invalid {name} export: {exc}"

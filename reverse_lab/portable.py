@@ -47,7 +47,15 @@ def main(argv: list[str] | None = None) -> None:
         "--gui-smoke-output", type=Path,
         help="Create real Tkinter window and write JSON checks (no sample analysis)",
     )
+    mode.add_argument(
+        "--diagnostics-output", type=Path,
+        help="Write privacy-safe support status (no GUI, no files analyzed)",
+    )
     args = parser.parse_args(argv)
+    if args.diagnostics_output is not None:
+        from .support import write_diagnostics
+        write_diagnostics(args.diagnostics_output)
+        return
     if args.self_test_output is not None:
         report = collect_portable_status()
         args.self_test_output.write_text(

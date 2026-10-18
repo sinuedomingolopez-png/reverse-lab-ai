@@ -39,7 +39,7 @@ Consulta [historial local, límites y privacidad](docs/HISTORY_LOCAL.md).
 
 ## Windows portable sin instalar Python (0.10)
 
-La compilación opcional de Windows usa PyInstaller y genera un ZIP con `ReverseLabAI.exe`. Permite abrir la interfaz y realizar análisis básicos **sin instalar Python**. El ZIP se produce en GitHub Actions después de ejecutar pruebas, comprobar los scripts de Ghidra y **crear una ventana Tkinter real en el ejecutable Windows compilado**.
+La compilación opcional de Windows usa PyInstaller y genera un ZIP con `ReverseLabAI.exe`. Permite abrir la interfaz y realizar análisis básicos **sin instalar Python**. El ZIP se produce en GitHub Actions después de ejecutar pruebas, comprobar los scripts de Ghidra e **intentar crear una ventana Tkinter real en Windows**. Si el runner de GitHub no dispone de un escritorio interactivo, el resultado queda como `not_verified` (no como éxito). La ventana sí tiene pruebas reales con pantalla virtual Linux.
 
 Descarga las compilaciones desde [Actions → Windows portable](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/windows-portable.yml). El artefacto de CI dura 14 días, puede requerir inicio de sesión y **no está firmado digitalmente**. No desactives SmartScreen; verifica procedencia y SHA-256. Ghidra, Cutter, Rizin, LIEF y angr siguen siendo opcionales y NO están incluidos. Para usar angr desde el portable necesitas un Python externo con angr instalado.
 

@@ -61,6 +61,19 @@ Después de instalar Ghidra, abre la interfaz y pulsa **Autoprueba Ghidra**. Alt
 
 Sustituye la ruta de ejemplo por la real. Si Ghidra no está instalado, verás el estado `missing`; no se descarga ni se instala automáticamente. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).
 
+## Cutter y angr (opcionales)
+
+Para usar Cutter, instálalo desde [releases oficiales](https://github.com/rizinorg/cutter/releases); abre Reverse Lab AI, selecciona tu archivo y pulsa **Abrir archivo en Cutter**. Si no se encuentra el lanzador, define `CUTTER_PATH`.
+
+Para activar angr CFGFast:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install angr
+.\.venv\Scripts\python.exe -m reverse_lab.cli ".\archivo_autorizado.exe" --backend angr --timeout 90 --output resultado-angr.json
+```
+
+También puedes seleccionar `angr` en la interfaz. Es un análisis estático opcional, no un aislamiento de seguridad. Consulta [CUTTER_ANGR.md](CUTTER_ANGR.md).
+
 ## Ghidra (experimental)
 
 Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases. El adaptador headless requiere señalar `support/analyzeHeadless.bat`.
@@ -70,5 +83,5 @@ Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases. 
 ## Limitaciones
 
 - Los motores profesionales no se descargan ni instalan automáticamente.
-- Cutter y angr siguen pendientes de integración.
+- Cutter se abre como aplicación separada; angr CFGFast requiere una instalación opcional. No hay integración de ejecución simbólica.
 - No se ejecuta el binario que se examina: se hacen análisis estáticos. Los analizadores pueden contener vulnerabilidades; usa muestras autorizadas y entornos aislados.

@@ -8,10 +8,30 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from tools.build_windows import build_command, make_archive, portable_readme, attempt_gui_smoke, windows_diagnostic_launcher
+from tools.build_windows import build_command, make_archive, portable_readme, attempt_gui_smoke, windows_diagnostic_launcher, release_version
 
 
 class PortableBuilderTests(unittest.TestCase):
+    def test_release_version_matches_python_package_and_support_report(self):
+        import re
+        from reverse_lab import support
+        project = Path(__file__).resolve().parents[1]
+        declared = re.search(r'^version = "([^"]+)"$', (project / "pyproject.toml").read_text(),
+                             re.MULTILINE).group(1)
+        self.assertEqual(release_version(), declared)
+        self.assertEqual(support._RELEASE, declared)
+        self.assertIn(f"({declared})", portable_readme())
+
+    def test_default_archive_uses_current_package_version_not_stale_label(self):
+        with tempfile.TemporaryDirectory() as td:
+            app = Path(td) / "dist" / "ReverseLabAI"
+            app.mkdir(parents=True)
+            (app / "ReverseLabAI.exe").write_bytes(b"test")
+            archive, checksum = make_archive(app)
+            self.assertEqual(archive.name,
+                             f"ReverseLabAI-{release_version()}-windows-x64.zip")
+            self.assertTrue(checksum.is_file())
+
     def test_pyinstaller_command_uses_onedir_windowed_and_bundled_scripts(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

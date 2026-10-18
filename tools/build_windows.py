@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import zipfile
@@ -17,8 +18,19 @@ from pathlib import Path
 APP_NAME = "ReverseLabAI"
 
 
+def release_version() -> str:
+    """Read authoritative package version; never silently ship a stale ZIP."""
+    project = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    text = project.read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"\s*$', text,
+                      re.MULTILINE)
+    if not match:
+        raise RuntimeError("Cannot read semantic release version from pyproject.toml")
+    return match.group(1)
+
+
 def portable_readme() -> str:
-    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.11.0)
+    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (__RELEASE__)
 
 1. Extrae el ZIP completo a una carpeta local.
 2. Haz doble clic en ReverseLabAI.exe (mantén la carpeta _internal).
@@ -44,7 +56,7 @@ Guardara un resumen tecnico sin rutas privadas en la carpeta TEMP de usuario.
 No analiza muestras ni envia archivos a Internet.
 
 No es un instalador. No modifica el Registro de Windows ni instala servicios.
-"""
+""".replace("__RELEASE__", release_version())
 
 
 def windows_diagnostic_launcher() -> str:
@@ -86,11 +98,12 @@ def build_command(source_root: Path) -> list[str]:
 
 
 def make_archive(
-    app_directory: Path, *, version: str = "0.11.0",
+    app_directory: Path, *, version: str | None = None,
 ) -> tuple[Path, Path]:
     """Create a portable ZIP and separate SHA-256 manifest (not a signature)."""
     if not (app_directory / f"{APP_NAME}.exe").is_file():
         raise ValueError("Portable application EXE is missing; build must succeed first")
+    version = version if version is not None else release_version()
     archive = app_directory.parent / f"{APP_NAME}-{version}-windows-x64.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED,
                          compresslevel=8) as bundle:

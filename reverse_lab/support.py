@@ -13,7 +13,7 @@ from pathlib import Path
 
 _SCHEMA = "reverse-lab-support-v1"
 _TOOLS = ("ghidra", "rizin", "cutter", "angr", "lief")
-_RELEASE = "0.11.0"
+_RELEASE = "0.12.0"
 
 
 def collect_diagnostics(

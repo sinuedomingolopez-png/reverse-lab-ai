@@ -105,7 +105,11 @@ def main(argv: list[str] | None = None) -> None:
         cwd=root, check=False, timeout=50,
     )
     if completed.returncode != 0 or not report_path.is_file():
-        raise RuntimeError("Portable Windows executable failed its boot-time self-test")
+        details = report_path.read_text(encoding="utf-8")[:1500] if report_path.is_file() \
+                  else "No JSON report produced (possibly a frozen import/startup error)."
+        raise RuntimeError(
+            f"Portable EXE startup self-test failed (exit={completed.returncode}): {details}"
+        )
     report = json.loads(report_path.read_text(encoding="utf-8"))
     if report.get("status") != "ready" or report.get("frozen") is not True:
         raise RuntimeError("Portable Windows bundle does not include the required scripts")

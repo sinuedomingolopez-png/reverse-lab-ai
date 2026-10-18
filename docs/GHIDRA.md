@@ -1,4 +1,4 @@
-# Ghidra: análisis local y exportación de funciones
+# Ghidra: análisis local y exportación de funciones y pseudocódigo experimental
 
 Documentación oficial: https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/RuntimeScripts/support/analyzeHeadlessREADME.md
 
@@ -9,11 +9,13 @@ Documentación oficial: https://github.com/NationalSecurityAgency/ghidra/blob/ma
 ```bash
 python -m reverse_lab.cli ejemplo.bin --backend ghidra \
   --ghidra-headless /ruta/ghidra/support/analyzeHeadless \
-  --export-functions --output analisis.json
+  --export-functions --export-pseudocode --output analisis.json
 ```
 
 Sin `--export-functions`, el adaptador devuelve estado de ejecución y extractos del registro. Con el flag, utiliza `reverse_lab/ghidra_scripts/ExportFunctions.java` para generar nombres y direcciones de entrada de funciones en JSON.
 
-Python lee ese JSON antes de limpiar el proyecto temporal. Si no aparece, es inválido o supera 10 MB, el informe indica un error. Se limita el listado a 10000 funciones por defecto y existe un tiempo límite configurable con `--timeout`.
+`--export-pseudocode` añade el script `ExportPseudocode.java`, que utiliza el descompilador de Ghidra para obtener pseudocódigo C aproximado. Está desactivado por defecto y limitado a 20 funciones, 8000 caracteres por función y 10 segundos por función. Se comprueba que el JSON no exceda 2 MiB; las entradas se validan antes de aceptarlas. **No recupera el código fuente original.**
 
-**Limitaciones:** no exporta aún pseudocódigo ni grafos. El script Java no ha sido validado con una instalación real de Ghidra. La ejecución de lanzadores `.bat` en Windows necesita comprobación práctica, especialmente con rutas con caracteres especiales. Los tests existentes simulan el proceso. Trabaja dentro de una máquina virtual cuando inspecciones archivos no confiables.
+Python lee el JSON antes de limpiar el proyecto temporal. Si no aparece, es inválido o supera 10 MB, el informe indica un error. Se limita el listado a 10000 funciones por defecto y existe un tiempo límite configurable con `--timeout`.
+
+**Limitaciones:** la exportación de pseudocódigo es experimental y no se ha probado aún con un Ghidra real. Las pruebas incluyen un ejecutable de análisis simulado y comprobaciones de argumentos en Windows. El lanzador `.bat` emplea la ruta de shell de Python con validación previa y rechaza rutas que contienen `&`, `|`, `<`, `>`, `^`, `%` o `!`. Falta realizar una prueba real de extremo a extremo en Windows. Los archivos desconocidos deben analizarse dentro de una máquina virtual sin acceso a información privada. El JSON con pseudocódigo **puede contener secretos del archivo**, por lo que no debes publicarlo ni cargarlo automáticamente en modelos remotos. Trabaja dentro de una máquina virtual cuando inspecciones archivos no confiables.

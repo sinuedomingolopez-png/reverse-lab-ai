@@ -47,7 +47,7 @@ class PortableBuilderTests(unittest.TestCase):
             nested.mkdir(parents=True)
             (app / "ReverseLabAI.exe").write_bytes(b"demo")
             (nested / "ExportFunctions.java").write_text("sample", encoding="utf-8")
-            archive, checksum_path = make_archive(app, version="0.9.0")
+            archive, checksum_path = make_archive(app, version="0.11.0")
             self.assertTrue(archive.is_file())
             self.assertTrue(checksum_path.is_file())
             with zipfile.ZipFile(archive) as package:

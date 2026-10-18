@@ -14,7 +14,13 @@ _REQUIRED_SCRIPTS = ("ExportFunctions.java", "ExportPseudocode.java", "ExportCal
 
 def collect_portable_status(*, package_dir: Path | None = None) -> dict:
     """Return verifiable local bundle status for Windows release CI."""
-    root = package_dir if package_dir is not None else Path(__file__).resolve().parent
+    if package_dir is None:
+        import reverse_lab
+        # In a frozen build __main__.__file__ is at the bundle root, not
+        # necessarily inside reverse_lab. Package __file__ stays accurate.
+        root = Path(reverse_lab.__file__).resolve().parent
+    else:
+        root = package_dir
     scripts = root / "ghidra_scripts"
     missing = [name for name in _REQUIRED_SCRIPTS if not (scripts / name).is_file()]
     return {

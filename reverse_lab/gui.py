@@ -13,6 +13,7 @@ from .call_graph import extract_call_edges, outgoing_calls, build_dot
 from . import report_gui, function_explorer_gui, ghidra_diagnostic_gui
 from .reports import load_report
 from .integrations.cutter_adapter import launch_cutter
+from . import history_gui
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -152,6 +153,15 @@ def main() -> None:
             ttk.Button(actions, text="Explicar", command=lambda: report_gui.explain_current_report(self.root, self.report)).pack(side="left", padx=(6, 0))
             self.progress = ttk.Progressbar(actions, mode="indeterminate", length=145)
             self.progress.pack(side="right", padx=(10, 0))
+
+            history_controls = ttk.Frame(container)
+            history_controls.pack(fill="x", pady=(0, 8))
+            ttk.Label(history_controls, text="Historial privado · sin guardado automático",
+                      style="Sub.TLabel").pack(side="left")
+            ttk.Button(history_controls, text="Guardar en historial",
+                       command=self.save_to_local_history).pack(side="left", padx=(12, 6))
+            ttk.Button(history_controls, text="Historial local",
+                       command=self.open_local_history).pack(side="left")
             ttk.Label(container, textvariable=self.status_var, style="Sub.TLabel").pack(anchor="w", pady=(1, 10))
 
             tabs = ttk.Notebook(container)
@@ -438,6 +448,20 @@ def main() -> None:
                 messagebox.showerror("Error al exportar mapa", str(exc))
                 return
             self.status_var.set("Mapa DOT guardado en " + path)
+
+        def save_to_local_history(self):
+            saved = history_gui.save_current_report(self.root, self.report)
+            if saved is not None:
+                self.status_var.set("Informe guardado en historial local · " + saved["filename"])
+
+        def open_local_history(self):
+            history_gui.open_history(self.root, self._load_local_history_report)
+
+        def _load_local_history_report(self, report):
+            self.report = report
+            self.save_button.configure(state="normal")
+            self.display(report)
+            self.status_var.set("Informe abierto desde historial local · " + report["filename"])
 
         def open_saved_function_report(self):
             path = filedialog.askopenfilename(title="Abrir informe Reverse Lab AI",

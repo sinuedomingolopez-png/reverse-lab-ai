@@ -35,4 +35,4 @@ El historial pertenece al usuario de Windows/Linux/macOS, **no a la carpeta dond
 
 ## Pruebas
 
-La CI comprueba guardado, recuperación, límites de tamaño, errores, borrado, protección de rutas y controles de la ventana en Linux. La compilación portable de Windows añade una prueba que crea la ventana principal con sus botones y luego la cierra, **sin analizar muestras**. Sigue recomendándose comprobar la app en un ordenador personal Windows.
+La CI comprueba guardado, recuperación, límites de tamaño, errores, borrado, protección de rutas y controles de la ventana en Linux. La compilación portable de Windows **intenta** crear la ventana principal y comprobar sus botones, sin analizar muestras. Si el runner no dispone de escritorio interactivo, registra explícitamente `not_verified` y exige una comprobación manual. Las pruebas gráficas Linux sí crean ventanas reales. Sigue recomendándose comprobar la app en un ordenador personal Windows.

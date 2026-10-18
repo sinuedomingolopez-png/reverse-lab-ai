@@ -213,6 +213,9 @@ def main() -> None:
             if backend == "ghidra" and not launcher:
                 messagebox.showwarning("Ghidra", "Selecciona analyzeHeadless para usar Ghidra.")
                 return
+            if self.pseudocode_var.get() and backend != "ghidra":
+                messagebox.showwarning("Pseudocódigo", "Esta función necesita el motor Ghidra.")
+                return
             params = dict(backend=backend, timeout=timeout,
                           ghidra_headless=launcher,
                           rizin_executable=self.rizin_var.get().strip() or "rz-bin",

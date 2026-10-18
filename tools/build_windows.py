@@ -57,7 +57,7 @@ def build_command(source_root: Path) -> list[str]:
         "--paths", ".",
         "--distpath", "dist",
         "--workpath", "build",
-        "--specpath", "build",
+        "--specpath", ".",
         "reverse_lab/portable.py",
     ]
 

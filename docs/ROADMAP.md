@@ -12,7 +12,8 @@
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Explorador de funciones con búsqueda, referencias de entrada/salida, pseudocódigo, navegación entre funciones y carga local de informes anteriores.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
-- Pipeline de ZIP portable en Windows (PyInstaller), con autoprueba offline del ejecutable, scripts de Ghidra empaquetados y SHA-256.
+- Pipeline de ZIP portable en Windows (PyInstaller), con autoprueba offline del ejecutable, arranque real de la ventana Tkinter, scripts de Ghidra empaquetados y SHA-256.
+- Historial optativo y local de informes con controles de privacidad, límites de tamaño y borrado explícito.
 - Comparador de informes JSON con cambios de firmas, tamaño, motores y listas de funciones.
 - Interpretación determinista sin IA y conector opcional de IA mediante Ollama local, sin enviar binarios.
 

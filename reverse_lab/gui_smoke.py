@@ -16,19 +16,16 @@ _REQUIRED_CONTROLS = (
 
 def _start_and_collect() -> dict:
     import tkinter as tk
-    from unittest.mock import patch
-    from . import gui
+        from . import gui
 
     def descendants(widget):
         for child in widget.winfo_children():
             yield child
             yield from descendants(child)
 
-    # The GUI should construct and return without waiting in the event loop.
-    # Only this temporary process is affected; no installed GUI code is changed.
-    with patch.object(tk.Tk, "mainloop", lambda self: None):
-        gui.main()
-    root = tk._default_root
+    # Construct an actual window without monkeypatching Tkinter's event loop.
+    # The GUI exposes this explicit mode for both source and frozen startup tests.
+    root = gui.main(run_loop=False)
     if root is None:
         return {"window_created": False, "controls": [], "backend_angr": False,
                 "window_title": ""}

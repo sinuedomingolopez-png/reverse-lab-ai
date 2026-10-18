@@ -27,7 +27,8 @@ class SupportDiagnosticsTests(unittest.TestCase):
         }
 
     def test_diagnostics_are_safe_allowlisted_public_metadata(self):
-        report = collect_diagnostics(environment=self.tools, bundle_status=self.bundle)
+        with patch("reverse_lab.support.sys.frozen", True, create=True):
+            report = collect_diagnostics(environment=self.tools, bundle_status=self.bundle)
         data = json.dumps(report)
         self.assertEqual(report["schema"], "reverse-lab-support-v1")
         self.assertTrue(report["portable"])

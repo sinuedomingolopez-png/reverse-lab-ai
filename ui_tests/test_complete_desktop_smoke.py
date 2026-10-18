@@ -9,6 +9,7 @@ class CompleteDesktopSmokeTests(unittest.TestCase):
         self.assertIn("Guardar en historial", result["controls"])
         self.assertIn("Historial local", result["controls"])
         self.assertIn("Guardar diagnóstico", result["controls"])
+        self.assertIn("Probar LIEF/angr", result["controls"])
 
 if __name__ == "__main__":
     unittest.main()

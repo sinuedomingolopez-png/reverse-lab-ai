@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reverse-lab-ai"
-version = "0.11.0"
+version = "0.12.0"
 description = "Local static binary inspection and reverse engineering integration lab"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
 angr = ["angr"]
+lief = ["lief"]
+validation = ["lief", "angr"]
 
 [tool.setuptools.packages.find]
 include = ["reverse_lab*"]
@@ -19,6 +21,7 @@ reverse-lab = "reverse_lab.cli:main"
 reverse-lab-compare = "reverse_lab.report_cli:main_compare"
 reverse-lab-explain = "reverse_lab.report_cli:main_explain"
 reverse-lab-ghidra-check = "reverse_lab.ghidra_probe:main"
+reverse-lab-engine-check = "reverse_lab.engine_probe:main"
 
 [tool.setuptools.package-data]
 reverse_lab = ["ghidra_scripts/*.java"]

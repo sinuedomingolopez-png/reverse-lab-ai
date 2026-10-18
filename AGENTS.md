@@ -27,3 +27,9 @@
 - Exportar únicamente estados técnicos en una lista de campos permitidos. No incluir rutas, usernames, logs, variables de entorno, nombres de muestras, código descompilado ni secretos.
 - No guardar diagnósticos automáticamente; solo por acción explícita del usuario o del pipeline de pruebas.
 - La prueba GUI del runner Windows que agota el tiempo se registra como `not_verified`, nunca como correcta. El ejecutable debe superar el diagnóstico offline antes de publicarse.
+
+## Validación auténtica de motores
+
+- Para LIEF y angr usa el módulo `python -m reverse_lab.engine_probe` sobre el ELF sintético del proyecto.
+- No presentes las pruebas simuladas como validación de una instalación auténtica; comprueba el workflow `Real analysis engines` y sus resultados.
+- No envíes rutas, binarios, pseudocódigo, stderr ni nombres privados al diagnóstico; informa `passed`, `failed` y `missing` con comprobaciones permitidas.

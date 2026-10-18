@@ -24,7 +24,9 @@
 - Probar el ZIP portable en Windows físico y contrastar advertencias de seguridad al ser un ejecutable **sin firma**.
 - Probar acceso de la versión portable a Ghidra, Cutter y Rizin instalados en Windows.
 - Probar angr externo con `REVERSE_LAB_PYTHON` y una muestra sintética en un entorno aislado.
-- Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
+- LIEF real: nuevo workflow de integración Windows/Linux con archivo ELF sintético.
+- angr real: nuevo workflow CFGFast con instalación auténtica en Linux.
+- Rizin real: pendiente de instalarlo y validarlo sobre la muestra sintética.
 - Ejecutar en un equipo con Ghidra instalado la nueva autoprueba y validar la compilación de los tres scripts Java con versiones actuales.
 - Validar Ghidra real en Windows con rutas con espacios; la invocación `.bat` cuenta por ahora con pruebas simuladas y rechazo de caracteres de shell peligrosos.
 - Añadir tests de integración condicionados por disponibilidad de ejecutables.

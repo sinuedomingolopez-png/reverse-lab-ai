@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.11.0)
+## Interfaz visual local (0.12.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -28,6 +28,19 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - **Explorador unificado de funciones:** búsqueda por nombre/dirección, pseudocódigo, referencias entrantes y salientes, navegación entre funciones y carga de JSON existentes.
 - Pruebas unitarias sin motores externos y workflow CI.
 - Empaquetado Windows portable (PyInstaller onedir), test de integridad, diagnóstico sin interfaz, comprobación gráfica cuando hay escritorio interactivo, y manifiesto SHA-256.
+
+## Comprobación de motores auténticos (0.12)
+
+Se han añadido pruebas de integración con **LIEF real** sobre Windows/Linux y **angr real** sobre Linux, analizando únicamente un ELF sintético que el programa genera y no ejecuta. La autoprueba distingue motor ausente, error y resultado válido. Permite detectar incompatibilidades que no aparecían al utilizar simuladores.
+
+```bash
+python -m pip install lief
+python -m reverse_lab.engine_probe --engine lief
+python -m pip install angr
+python -m reverse_lab.engine_probe --engine angr --timeout 120
+```
+
+En la interfaz, pulsa **Probar LIEF/angr**. Las dependencias siguen siendo opcionales; el ZIP base no las incluye. Consulta [la guía de validación de motores reales](docs/REAL_ENGINES.md).
 
 ## Diagnóstico privado y soporte para Windows (0.11)
 

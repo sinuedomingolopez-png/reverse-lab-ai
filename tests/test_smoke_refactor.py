@@ -16,6 +16,7 @@ class FakeRoot:
             FakeWidget("TButton", "Guardar en historial"),
             FakeWidget("TButton", "Autoprueba Ghidra"),
             FakeWidget("TButton", "Guardar diagnóstico"),
+            FakeWidget("TButton", "Probar LIEF/angr"),
             FakeWidget("TCombobox", None),
         ]
 

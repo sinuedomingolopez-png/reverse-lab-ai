@@ -25,6 +25,17 @@ class PortableBuilderTests(unittest.TestCase):
             "The portable build must ship the worker source for an external Python."
         )
 
+    def test_pyinstaller_spec_and_data_are_resolved_from_project_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cmd = build_command(Path(tmp))
+        # PyInstaller resolves --add-data sources relative to the .spec file.
+        # Keeping .spec in ./ avoids accidentally searching ./build/... .
+        self.assertEqual(cmd[cmd.index("--specpath") + 1], ".")
+        self.assertIn(
+            "reverse_lab/integrations/angr_worker.py:reverse_lab/integrations",
+            cmd,
+        )
+
     def test_archive_preserves_app_folder_structure_and_hashes(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

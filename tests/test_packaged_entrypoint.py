@@ -4,6 +4,7 @@ PyInstaller runs reverse_lab/portable.py as the script entrypoint. Relative
 imports in that file may fail even though package-level unittest mocks pass.
 """
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -23,6 +24,11 @@ class PackagedEntrypointTests(unittest.TestCase):
             process = subprocess.run(
                 [sys.executable, str(SCRIPT), "--diagnostics-output", str(output)],
                 capture_output=True, text=True, timeout=15,
+                # PyInstaller bundles reverse_lab as an importable package.
+                # Simulate that by including the project root in sys.path.
+                env={**os.environ,
+                     "PYTHONPATH": str(SCRIPT.parents[1]) + os.pathsep +
+                                   os.environ.get("PYTHONPATH", "")},
             )
             self.assertEqual(process.returncode, 0, process.stderr[-700:])
             result = json.loads(output.read_text(encoding="utf-8"))

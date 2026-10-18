@@ -31,7 +31,7 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 
 ## Comprobación de motores auténticos (0.12)
 
-Se han añadido pruebas de integración con **LIEF real** sobre Windows/Linux y **angr real** sobre Linux, analizando únicamente un ELF sintético que el programa genera y no ejecuta. La autoprueba distingue motor ausente, error y resultado válido. Permite detectar incompatibilidades que no aparecían al utilizar simuladores.
+Se ha preparado un flujo de integración para comprobar **LIEF real** sobre Windows/Linux y **angr real** sobre Linux, analizando únicamente un ELF sintético que el programa genera y no ejecuta. **Estas pruebas con motores instalados aún no tienen una ejecución verificada**; se pueden lanzar manualmente desde GitHub Actions → Real analysis engines. La autoprueba distingue motor ausente, error y resultado válido. Permite detectar incompatibilidades que no aparecían al utilizar simuladores.
 
 ```bash
 python -m pip install lief

@@ -32,7 +32,7 @@ Abre `python -m reverse_lab.gui` o `ReverseLabAI.exe`, pulsa **Probar LIEF/angr*
 
 ## GitHub Actions: motores auténticos
 
-También se han incorporado pruebas con los paquetes reales al flujo principal `Tests`, para evitar que una modificación del workflow de verificación impida lanzar la validación. Los trabajos aparecen como **Installed LIEF (ubuntu-latest)**, **Installed LIEF (windows-latest)** y **Installed angr CFGFast (Linux)**. Cada uno debe terminar correctamente para acreditar su plataforma. Si alguno falla, no debe presentarse como validado.
+El flujo principal `Tests` mantiene sus cuatro combinaciones estables de Windows/Linux y Python 3.10/3.13, usando principalmente dobles de prueba de los motores externos. Las comprobaciones con LIEF y angr **instalados de verdad** se encuentran en el flujo independiente `Real analysis engines`, disponible para ejecución manual en GitHub Actions (`workflow_dispatch`). **No están verificadas automáticamente en esta versión**: hasta disponer de una ejecución confirmada no se deben presentar como superadas.
 
 
 El nuevo flujo [Real analysis engines](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/real-engines.yml) instala LIEF de PyPI en Windows y Linux, y angr de PyPI en Linux con Python 3.11. Ejecuta `reverse_lab.engine_probe` y publica informes JSON con los resultados técnicos. No utiliza binarios desconocidos, contraseñas ni datos personales.

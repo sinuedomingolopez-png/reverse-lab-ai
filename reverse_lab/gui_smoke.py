@@ -11,6 +11,7 @@ _REQUIRED_CONTROLS = (
     "Historial local",
     "Guardar en historial",
     "Autoprueba Ghidra",
+    "Guardar diagnóstico",
 )
 
 

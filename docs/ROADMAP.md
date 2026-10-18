@@ -14,6 +14,8 @@
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
 - Pipeline de ZIP portable en Windows (PyInstaller), con autoprueba offline del ejecutable, intento de arranque real de la ventana Tkinter (registrando `not_verified` cuando la CI carece de escritorio), scripts de Ghidra empaquetados y SHA-256.
 - Historial optativo y local de informes con controles de privacidad, límites de tamaño y borrado explícito.
+- Exportación voluntaria de diagnóstico offline sin nombres ni rutas privadas y script Windows para problemas de arranque.
+- Verificación de la generación de informes de soporte mediante el EXE compilado en GitHub Actions.
 - Comparador de informes JSON con cambios de firmas, tamaño, motores y listas de funciones.
 - Interpretación determinista sin IA y conector opcional de IA mediante Ollama local, sin enviar binarios.
 

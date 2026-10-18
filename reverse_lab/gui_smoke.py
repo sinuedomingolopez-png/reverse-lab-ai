@@ -17,7 +17,7 @@ _REQUIRED_CONTROLS = (
 
 def _start_and_collect() -> dict:
     import tkinter as tk
-        from . import gui
+    from . import gui
 
     def descendants(widget):
         for child in widget.winfo_children():

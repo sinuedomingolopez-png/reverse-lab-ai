@@ -8,7 +8,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from tools.build_windows import build_command, make_archive, portable_readme, attempt_gui_smoke
+from tools.build_windows import build_command, make_archive, portable_readme, attempt_gui_smoke, windows_diagnostic_launcher
 
 
 class PortableBuilderTests(unittest.TestCase):
@@ -47,7 +47,7 @@ class PortableBuilderTests(unittest.TestCase):
             nested.mkdir(parents=True)
             (app / "ReverseLabAI.exe").write_bytes(b"demo")
             (nested / "ExportFunctions.java").write_text("sample", encoding="utf-8")
-            archive, checksum_path = make_archive(app, version="0.9.0")
+            archive, checksum_path = make_archive(app, version="0.11.0")
             self.assertTrue(archive.is_file())
             self.assertTrue(checksum_path.is_file())
             with zipfile.ZipFile(archive) as package:
@@ -84,6 +84,13 @@ class PortableBuilderTests(unittest.TestCase):
                        return_value=subprocess.CompletedProcess([], 3)):
                 with self.assertRaisesRegex(RuntimeError, "GUI"):
                     attempt_gui_smoke(Path(td) / "ReverseLabAI.exe", path)
+
+    def test_windows_support_launcher_creates_only_opt_in_safe_report(self):
+        script = windows_diagnostic_launcher()
+        self.assertIn('ReverseLabAI.exe', script)
+        self.assertIn('--diagnostics-output', script)
+        self.assertIn('%TEMP%', script)
+        self.assertNotIn('powershell -enc', script.lower())
 
     def test_readme_explains_unsigned_status_and_optional_tools(self):
         text = portable_readme()

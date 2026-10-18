@@ -1,5 +1,9 @@
 # Reverse Lab AI: instalación local en Windows
 
+## Soporte cuando el EXE no abre
+
+En la carpeta extraída del ZIP encontrarás `DIAGNOSTICO-WINDOWS.cmd`. Ábrelo para generar un resumen de herramientas e integridad del paquete **sin arrancar la ventana**. Si la interfaz sí funciona, pulsa **Guardar diagnóstico**. Consulta [SUPPORT_WINDOWS.md](SUPPORT_WINDOWS.md).
+
 ## Historial de informes
 
 Desde Reverse Lab AI puedes utilizar **Guardar en historial** para conservar un informe en tu cuenta de Windows, solo con confirmación. **Historial local** permite recuperarlo y eliminarlo. Los informes pueden contener datos privados y no se cifran automáticamente. Consulta [HISTORY_LOCAL.md](HISTORY_LOCAL.md).

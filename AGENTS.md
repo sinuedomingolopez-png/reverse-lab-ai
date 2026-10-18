@@ -21,3 +21,9 @@
 - Nunca guardar informes automáticamente. El historial completo (incluidos pseudocódigo y símbolos) debe requerir acción y confirmación explícitas.
 - No subir informes del historial a GitHub, servicios externos ni IA; proteger identificadores, límites de archivos y operaciones de borrado.
 - La versión portable debe intentar comprobar con `--gui-smoke-output` la ventana real de Windows. Si la CI es no interactiva y agota el tiempo, etiquetar `not_verified` y exigir prueba manual; nunca presentarlo como éxito.
+
+## Diagnósticos de soporte
+
+- Exportar únicamente estados técnicos en una lista de campos permitidos. No incluir rutas, usernames, logs, variables de entorno, nombres de muestras, código descompilado ni secretos.
+- No guardar diagnósticos automáticamente; solo por acción explícita del usuario o del pipeline de pruebas.
+- La prueba GUI del runner Windows que agota el tiempo se registra como `not_verified`, nunca como correcta. El ejecutable debe superar el diagnóstico offline antes de publicarse.

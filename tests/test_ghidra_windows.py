@@ -24,7 +24,7 @@ class WindowsBatchTests(unittest.TestCase):
                 report = analyze_with_ghidra(self.target, self.launcher)
         self.assertTrue(report['success'])
         self.assertTrue(run.call_args.kwargs['shell'])
-        self.assertEqual(run.call_args.args[0][4], str(self.target))
+        self.assertEqual(Path(run.call_args.args[0][4]).resolve(), self.target.resolve())
 
     def test_windows_batch_rejects_shell_metacharacters(self):
         target = self.folder / 'untrusted & calc.exe'

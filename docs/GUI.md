@@ -28,6 +28,10 @@ Consulta [CUTTER_ANGR.md](CUTTER_ANGR.md).
 
 Pulsa **Autoprueba Ghidra** junto al campo de ruta a `analyzeHeadless`. La ventana ofrece detección sin ejecución y una prueba completa que crea un ELF sintético, lanza tu instalación local de Ghidra y comprueba exportaciones JSON. No descarga Ghidra ni utiliza archivos personales. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).
 
+## Autoprueba de LIEF y angr (0.12)
+
+Pulsa **Probar LIEF/angr** y elige uno de los motores. Se analiza solo un pequeño ELF sintético creado automáticamente; no necesitas seleccionar archivos ni compartirlos. El informe identifica motor no instalado, fallo o validación de funcionamiento, sin mostrar rutas ni pseudocódigo. Consulta [REAL_ENGINES.md](REAL_ENGINES.md).
+
 ## Guardar diagnóstico de soporte (0.11)
 
 Pulsa **Guardar diagnóstico** y elige la ruta de salida. Reverse Lab AI exportará un JSON de disponibilidad de herramientas e integridad del paquete, sin archivos analizados, credenciales, logs, nombres de usuario ni rutas privadas. No se guarda ni envía nada automáticamente.

@@ -28,6 +28,12 @@ Consulta [CUTTER_ANGR.md](CUTTER_ANGR.md).
 
 Pulsa **Autoprueba Ghidra** junto al campo de ruta a `analyzeHeadless`. La ventana ofrece detección sin ejecución y una prueba completa que crea un ELF sintético, lanza tu instalación local de Ghidra y comprueba exportaciones JSON. No descarga Ghidra ni utiliza archivos personales. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).
 
+## Historial privado (0.10)
+
+La ventana principal incluye dos botones: **Guardar en historial** (con confirmación explícita) y **Historial local** (para consultar, recuperar o eliminar copias). No se guarda ningún informe automáticamente. Las copias son archivos JSON de hasta 4 MiB y pueden incluir datos confidenciales; no están cifradas.
+
+Consulta la [guía del historial local](HISTORY_LOCAL.md) antes de guardar pseudocódigo sensible.
+
 ## Explorador de funciones
 
 En la pestaña **Funciones**, pulsa **Explorar funciones**, o haz doble clic sobre una función para abrir su ficha. Podrás buscar por nombre/dirección, navegar entre funciones relacionadas, consultar pseudocódigo y regresar con **Anterior**. En **Mapa de llamadas**, un doble clic abre la función destino.

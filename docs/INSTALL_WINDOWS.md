@@ -1,5 +1,9 @@
 # Reverse Lab AI: instalación local en Windows
 
+## Historial de informes
+
+Desde Reverse Lab AI puedes utilizar **Guardar en historial** para conservar un informe en tu cuenta de Windows, solo con confirmación. **Historial local** permite recuperarlo y eliminarlo. Los informes pueden contener datos privados y no se cifran automáticamente. Consulta [HISTORY_LOCAL.md](HISTORY_LOCAL.md).
+
 ## Opción portable (sin instalar Python)
 
 Puedes descargar un ZIP que incluye `ReverseLabAI.exe` en [GitHub Actions → Windows portable](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/windows-portable.yml). Extrae completa la carpeta `ReverseLabAI` y abre el ejecutable; el modo básico no exige Python. **El .exe no está firmado**. No desactives SmartScreen; comprueba el SHA-256. Consulta [WINDOWS_PORTABLE.md](WINDOWS_PORTABLE.md) para detalles y limitaciones.

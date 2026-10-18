@@ -18,7 +18,7 @@ APP_NAME = "ReverseLabAI"
 
 
 def portable_readme() -> str:
-    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.9.0)
+    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.10.0)
 
 1. Extrae el ZIP completo a una carpeta local.
 2. Haz doble clic en ReverseLabAI.exe (mantén la carpeta _internal).
@@ -63,7 +63,7 @@ def build_command(source_root: Path) -> list[str]:
 
 
 def make_archive(
-    app_directory: Path, *, version: str = "0.9.0",
+    app_directory: Path, *, version: str = "0.10.0",
 ) -> tuple[Path, Path]:
     """Create a portable ZIP and separate SHA-256 manifest (not a signature)."""
     if not (app_directory / f"{APP_NAME}.exe").is_file():
@@ -83,6 +83,50 @@ def make_archive(
         f"{sha256.hexdigest()}  {archive.name}\n", encoding="utf-8",
     )
     return archive, checksum_path
+
+
+
+def attempt_gui_smoke(
+    executable: Path, report_path: Path, *, timeout: int = 12,
+) -> dict:
+    """Try a GUI smoke test; do not call it passed without a real window.
+
+    GitHub's headless Windows runner may not provide an interactive desktop.
+    A timeout is explicitly INCONCLUSIVE, not a successful GUI validation.
+    """
+    try:
+        result = subprocess.run(
+            [str(executable), "--gui-smoke-output", str(report_path)],
+            check=False, timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        status = {
+            "status": "not_verified",
+            "window_created": False,
+            "reason": ("The automated Windows runner did not complete the "
+                       "interactive desktop check; manual Windows GUI testing is required."),
+        }
+        report_path.write_text(
+            json.dumps(status, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+        )
+        print("WARNING: GUI check timed out in CI; window NOT VERIFIED.")
+        return status
+
+    details = (
+        report_path.read_text(encoding="utf-8")[:1500] if report_path.is_file()
+        else "GUI check did not produce a report."
+    )
+    if result.returncode != 0 or not report_path.is_file():
+        raise RuntimeError(
+            f"Portable GUI smoke failed (exit={result.returncode}): {details}"
+        )
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except (UnicodeError, ValueError) as exc:
+        raise RuntimeError("Portable GUI smoke returned invalid JSON") from exc
+    if report.get("status") != "passed" or report.get("window_created") is not True:
+        raise RuntimeError("Portable GUI smoke did not validate a real window")
+    return report
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -114,11 +158,16 @@ def main(argv: list[str] | None = None) -> None:
     if report.get("status") != "ready" or report.get("frozen") is not True:
         raise RuntimeError("Portable Windows bundle does not include the required scripts")
 
+    gui_smoke_path = root / "dist" / "gui-smoke.json"
+    gui_report = attempt_gui_smoke(executable, gui_smoke_path)
+    if gui_report["status"] == "not_verified":
+        print("The ZIP is built, but real Windows GUI usage still needs a manual check.")
+
     (app / "LEEME-PORTABLE.txt").write_text(portable_readme(), encoding="utf-8")
     archive, checksum = make_archive(app)
     print(f"Portable ZIP: {archive}")
     print(f"SHA256 file: {checksum}")
-    print("Smoke-test: OK (only local bundle integrity, not Ghidra/Cutter/angr)")
+    print("Bundle integrity: OK. Windows GUI verification: " + gui_report["status"])
 
 
 if __name__ == "__main__":

@@ -15,3 +15,9 @@
 - Nunca afirmes que está firmada digitalmente. Conserva comprobación SHA-256 y arranque `--self-test-output` sin ejecutar muestras.
 - No incluyas motores Ghidra/Rizin/Cutter/LIEF/angr ni muestras privadas en el ZIP base. En modo frozen, angr requiere Python real externo configurado mediante `REVERSE_LAB_PYTHON`.
 - Las compilaciones sin firma pueden activar SmartScreen: no recomiendes desactivar protecciones del sistema.
+
+## Historia local de análisis
+
+- Nunca guardar informes automáticamente. El historial completo (incluidos pseudocódigo y símbolos) debe requerir acción y confirmación explícitas.
+- No subir informes del historial a GitHub, servicios externos ni IA; proteger identificadores, límites de archivos y operaciones de borrado.
+- La versión portable debe intentar comprobar con `--gui-smoke-output` la ventana real de Windows. Si la CI es no interactiva y agota el tiempo, etiquetar `not_verified` y exigir prueba manual; nunca presentarlo como éxito.

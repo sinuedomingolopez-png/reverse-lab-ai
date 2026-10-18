@@ -1,11 +1,14 @@
 """Regression checks for a reproducible, auditable Windows portable ZIP."""
 import hashlib
+import json
+import subprocess
+from unittest.mock import patch
 import tempfile
 import unittest
 import zipfile
 from pathlib import Path
 
-from tools.build_windows import build_command, make_archive, portable_readme
+from tools.build_windows import build_command, make_archive, portable_readme, attempt_gui_smoke
 
 
 class PortableBuilderTests(unittest.TestCase):
@@ -53,6 +56,34 @@ class PortableBuilderTests(unittest.TestCase):
             self.assertIn("ReverseLabAI/_internal/reverse_lab/ExportFunctions.java", names)
             expected = hashlib.sha256(archive.read_bytes()).hexdigest()
             self.assertTrue(checksum_path.read_text().startswith(expected))
+
+    def test_headless_windows_timeout_is_unverified_not_passed(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "gui-smoke.json"
+            with patch("tools.build_windows.subprocess.run",
+                       side_effect=subprocess.TimeoutExpired(["ReverseLabAI.exe"], 12)):
+                status = attempt_gui_smoke(Path(td) / "ReverseLabAI.exe", path, timeout=12)
+            self.assertEqual(status["status"], "not_verified")
+            self.assertFalse(status.get("window_created", False))
+            self.assertEqual(json.loads(path.read_text())["status"], "not_verified")
+
+    def test_real_success_requires_window_created(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "gui-smoke.json"
+            path.write_text(json.dumps({"status": "passed", "window_created": True}))
+            with patch("tools.build_windows.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 0)):
+                status = attempt_gui_smoke(Path(td) / "ReverseLabAI.exe", path)
+            self.assertEqual(status["status"], "passed")
+
+    def test_explicit_gui_failure_still_fails_build(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "gui-smoke.json"
+            path.write_text(json.dumps({"status": "failed", "window_created": False}))
+            with patch("tools.build_windows.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 3)):
+                with self.assertRaisesRegex(RuntimeError, "GUI"):
+                    attempt_gui_smoke(Path(td) / "ReverseLabAI.exe", path)
 
     def test_readme_explains_unsigned_status_and_optional_tools(self):
         text = portable_readme()

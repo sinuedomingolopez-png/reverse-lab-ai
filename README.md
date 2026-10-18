@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.9.0)
+## Interfaz visual local (0.10.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -27,11 +27,19 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
 - **Explorador unificado de funciones:** búsqueda por nombre/dirección, pseudocódigo, referencias entrantes y salientes, navegación entre funciones y carga de JSON existentes.
 - Pruebas unitarias sin motores externos y workflow CI.
-- Empaquetado Windows portable (PyInstaller onedir), test de integridad del ejecutable y manifiesto SHA-256.
+- Empaquetado Windows portable (PyInstaller onedir), test de integridad y arranque real de la ventana del ejecutable, y manifiesto SHA-256.
 
-## Windows portable sin instalar Python (0.9)
+## Historial privado de análisis (0.10)
 
-La compilación opcional de Windows usa PyInstaller y genera un ZIP con `ReverseLabAI.exe`. Permite abrir la interfaz y realizar análisis básicos **sin instalar Python**. El ZIP se produce en GitHub Actions después de ejecutar pruebas y verificar que el ejecutable incluye los scripts de Ghidra.
+Puedes conservar informes y recuperarlos cuando los necesites. El historial es **optativo**: utiliza **Guardar en historial**, revisa la advertencia sobre pseudocódigo y confirma. No guarda nada automáticamente. Con **Historial local** podrás volver a abrir informes o eliminar copias, sin repetir el análisis.
+
+Las copias se guardan en una carpeta privada de usuario (Windows: `%LOCALAPPDATA%\ReverseLabAI\history`), con un máximo de 30 informes y 4 MiB por copia. No se envían a GitHub, Ollama ni otros servicios. **No están cifradas**; evita guardar material confidencial en ordenadores compartidos.
+
+Consulta [historial local, límites y privacidad](docs/HISTORY_LOCAL.md).
+
+## Windows portable sin instalar Python (0.10)
+
+La compilación opcional de Windows usa PyInstaller y genera un ZIP con `ReverseLabAI.exe`. Permite abrir la interfaz y realizar análisis básicos **sin instalar Python**. El ZIP se produce en GitHub Actions después de ejecutar pruebas, comprobar los scripts de Ghidra e **intentar crear una ventana Tkinter real en Windows**. Si el runner de GitHub no dispone de un escritorio interactivo, el resultado queda como `not_verified` (no como éxito). La ventana sí tiene pruebas reales con pantalla virtual Linux.
 
 Descarga las compilaciones desde [Actions → Windows portable](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/windows-portable.yml). El artefacto de CI dura 14 días, puede requerir inicio de sesión y **no está firmado digitalmente**. No desactives SmartScreen; verifica procedencia y SHA-256. Ghidra, Cutter, Rizin, LIEF y angr siguen siendo opcionales y NO están incluidos. Para usar angr desde el portable necesitas un Python externo con angr instalado.
 

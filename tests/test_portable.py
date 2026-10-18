@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import reverse_lab
 from reverse_lab import portable
 from reverse_lab.integrations import angr_adapter
 
@@ -30,6 +31,21 @@ class PortableEntrypointTests(unittest.TestCase):
             status = portable.collect_portable_status(package_dir=Path(directory))
         self.assertEqual(status["status"], "ready")
         self.assertEqual(status["ghidra_script_count"], 3)
+
+    def test_frozen_main_module_uses_actual_package_location(self):
+        with tempfile.TemporaryDirectory() as directory:
+            internal = Path(directory) / "_internal"
+            package = internal / "reverse_lab"
+            scripts = package / "ghidra_scripts"
+            scripts.mkdir(parents=True)
+            for filename in ("ExportFunctions.java", "ExportPseudocode.java", "ExportCallGraph.java"):
+                (scripts / filename).write_text("// stub")
+            # PyInstaller puts the entry script at the bundle root, not necessarily
+            # under reverse_lab/. Read package location, not portable.__file__.
+            with patch.object(portable, "__file__", str(internal / "portable.py")), \
+                 patch.object(reverse_lab, "__file__", str(package / "__init__.py")):
+                result = portable.collect_portable_status()
+            self.assertEqual(result["status"], "ready")
 
     def test_selftest_writes_json_without_starting_gui(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.10.0)
+## Interfaz visual local (0.11.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -27,7 +27,15 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
 - **Explorador unificado de funciones:** búsqueda por nombre/dirección, pseudocódigo, referencias entrantes y salientes, navegación entre funciones y carga de JSON existentes.
 - Pruebas unitarias sin motores externos y workflow CI.
-- Empaquetado Windows portable (PyInstaller onedir), test de integridad y arranque real de la ventana del ejecutable, y manifiesto SHA-256.
+- Empaquetado Windows portable (PyInstaller onedir), test de integridad, diagnóstico sin interfaz, comprobación gráfica cuando hay escritorio interactivo, y manifiesto SHA-256.
+
+## Diagnóstico privado y soporte para Windows (0.11)
+
+La ventana principal incorpora **Guardar diagnóstico**, que exporta un resumen local **sin rutas, nombres de usuario, binarios ni pseudocódigo** y solo cuando tú lo decides. Si el EXE no abre, en la carpeta portable puedes ejecutar `DIAGNOSTICO-WINDOWS.cmd` para generar ese mismo informe sin iniciar la ventana.
+
+La autoprueba gráfica ahora construye una ventana Tkinter directamente, sin sustituir internamente su bucle de eventos. GitHub Actions intenta comprobar el EXE en Windows, pero si el runner no tiene escritorio interactivo registra `not_verified`; el ZIP solo se publica tras superar su prueba de integridad y el diagnóstico sin interfaz.
+
+Consulta la [guía de soporte Windows](docs/SUPPORT_WINDOWS.md).
 
 ## Historial privado de análisis (0.10)
 
@@ -37,7 +45,7 @@ Las copias se guardan en una carpeta privada de usuario (Windows: `%LOCALAPPDATA
 
 Consulta [historial local, límites y privacidad](docs/HISTORY_LOCAL.md).
 
-## Windows portable sin instalar Python (0.10)
+## Windows portable sin instalar Python (0.11)
 
 La compilación opcional de Windows usa PyInstaller y genera un ZIP con `ReverseLabAI.exe`. Permite abrir la interfaz y realizar análisis básicos **sin instalar Python**. El ZIP se produce en GitHub Actions después de ejecutar pruebas, comprobar los scripts de Ghidra e **intentar crear una ventana Tkinter real en Windows**. Si el runner de GitHub no dispone de un escritorio interactivo, el resultado queda como `not_verified` (no como éxito). La ventana sí tiene pruebas reales con pantalla virtual Linux.
 

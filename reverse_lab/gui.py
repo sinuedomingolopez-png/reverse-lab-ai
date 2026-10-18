@@ -12,6 +12,7 @@ from .workflow import analyze, BACKENDS
 from .call_graph import extract_call_edges, outgoing_calls, build_dot
 from . import report_gui, function_explorer_gui, ghidra_diagnostic_gui
 from .reports import load_report
+from .integrations.cutter_adapter import launch_cutter
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -128,6 +129,9 @@ def main() -> None:
                     self.root, self.ghidra_var.get().strip()
                 ),
             ).grid(row=2, column=2, sticky="e", pady=(6, 0))
+            ttk.Button(settings, text="Abrir archivo en Cutter",
+                       command=self.open_in_cutter).grid(
+                row=2, column=0, sticky="w", pady=(6, 0))
 
             options = ttk.Frame(container)
             options.pack(fill="x", pady=(0, 14))
@@ -170,7 +174,7 @@ def main() -> None:
             self.summary.configure(state="disabled")
             function_header = ttk.Frame(functions_page, style="Panel.TFrame")
             function_header.pack(fill="x", pady=(0, 8))
-            ttk.Label(function_header, text="Selecciona una función o abre el explorador unificado.",
+            ttk.Label(function_header, text="Funciones identificadas por los motores disponibles.",
                       style="Panel.TLabel").pack(side="left")
             ttk.Button(function_header, text="Explorar funciones",
                        command=self.open_function_explorer).pack(side="right")
@@ -221,6 +225,29 @@ def main() -> None:
             widget.delete("1.0", "end")
             widget.insert("1.0", text)
             widget.configure(state="disabled")
+
+        def open_in_cutter(self):
+            path = self.file_var.get().strip()
+            if not path or not Path(path).is_file():
+                messagebox.showwarning(
+                    "Cutter", "Selecciona primero un archivo existente para examinar.")
+                return
+            if not messagebox.askyesno(
+                "Abrir Cutter externo",
+                "Se abrirá el archivo en Cutter, una aplicación independiente. "
+                "Cutter debe estar instalado localmente. Solo abre muestras autorizadas "
+                "y utiliza una máquina virtual para archivos desconocidos."
+            ):
+                return
+            try:
+                result = launch_cutter(path)
+            except (RuntimeError, ValueError, OSError) as exc:
+                messagebox.showerror("Cutter", str(exc))
+                return
+            self.status_var.set(
+                "Cutter iniciado para " + result["filename"] +
+                " (proceso " + str(result["pid"]) + ")"
+            )
 
         def choose_file(self):
             path = filedialog.askopenfilename(title="Selecciona un archivo autorizado")
@@ -322,6 +349,10 @@ def main() -> None:
                     summary.append(f"FUNCIONES   {result['function_count']}")
                 if "call_graph_count" in result:
                     summary.append(f"LLAMADAS    {result['call_graph_count']} relaciones detectadas")
+                if result.get("backend") == "angr":
+                    summary.append(f"CFGFast     {result.get('cfg_nodes', '?')} bloques/estados CFG, "
+                                   f"{result.get('cfg_edges', '?')} enlaces del grafo")
+                    summary.append(f"FUNCIONES   {result.get('function_count', '?')} detectadas (angr)")
             self.set_text(self.summary, "\n".join(summary))
             for item in self.functions.get_children():
                 self.functions.delete(item)

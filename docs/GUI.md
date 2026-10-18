@@ -42,7 +42,9 @@ Desde la ventana principal, pulsa **Comparar JSON** para elegir dos informes gua
 
 La pestaña **Pseudocódigo** solo muestra resultados si has marcado la opción y el script de Ghidra se ha ejecutado correctamente. El contenido puede ser confidencial y no se envía a Ollama: el conector de IA local sigue recibiendo solo metadatos resumidos.
 
-El mapa de llamadas es opcional: marca **Mapa de llamadas** con Ghidra seleccionado y utiliza la pestaña correspondiente para inspeccionar conexiones. Exporta el grafo en Graphviz DOT con **Guardar .DOT**. Consulta [CALL_GRAPH.md](CALL_GRAPH.md).\n\n## Componentes opcionales
+El mapa de llamadas es opcional: marca **Mapa de llamadas** con Ghidra seleccionado y utiliza la pestaña correspondiente para inspeccionar conexiones. Exporta el grafo en Graphviz DOT con **Guardar .DOT**. Consulta [CALL_GRAPH.md](CALL_GRAPH.md).
+
+## Componentes opcionales
 
 - LIEF: `python -m pip install lief`
 - Rizin: https://github.com/rizinorg/rizin/releases

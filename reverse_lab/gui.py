@@ -69,6 +69,7 @@ def main() -> None:
             self.rizin_var = tk.StringVar(value="rz-bin")
             self.timeout_var = tk.StringVar(value="180")
             self.export_var = tk.BooleanVar(value=True)
+            self.pseudocode_var = tk.BooleanVar(value=False)
             self.status_var = tk.StringVar(value="Preparado · análisis local, sin subir archivos")
             style = ttk.Style(root)
             style.theme_use("clam")
@@ -121,6 +122,7 @@ def main() -> None:
             options = ttk.Frame(container)
             options.pack(fill="x", pady=(0, 14))
             ttk.Checkbutton(options, text="Exportar funciones de Ghidra", variable=self.export_var).pack(side="left")
+            ttk.Checkbutton(options, text="Pseudocódigo (experimental)", variable=self.pseudocode_var).pack(side="left", padx=(16, 0))
             ttk.Label(options, text="rz-bin:").pack(side="left", padx=(20, 6))
             ttk.Entry(options, textvariable=self.rizin_var, width=26).pack(side="left")
 
@@ -141,9 +143,11 @@ def main() -> None:
             tabs.pack(fill="both", expand=True)
             summary_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             functions_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
+            pseudocode_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             json_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             tabs.add(summary_page, text="Resumen")
             tabs.add(functions_page, text="Funciones")
+            tabs.add(pseudocode_page, text="Pseudocódigo")
             tabs.add(json_page, text="JSON")
 
             self.summary = scrolledtext.ScrolledText(summary_page, bg=FIELD, fg=TEXT, insertbackground=TEXT,
@@ -157,6 +161,11 @@ def main() -> None:
             self.functions.column("name", width=530)
             self.functions.column("entry", width=270)
             self.functions.pack(fill="both", expand=True)
+            self.pseudocode_view = scrolledtext.ScrolledText(
+                pseudocode_page, bg=FIELD, fg=TEXT, insertbackground=TEXT,
+                wrap="none", relief="flat", font=("Consolas", 10), padx=14, pady=14)
+            self.pseudocode_view.pack(fill="both", expand=True)
+            self.pseudocode_view.configure(state="disabled")
             self.json_view = scrolledtext.ScrolledText(json_page, bg=FIELD, fg=TEXT,
                     insertbackground=TEXT, wrap="none", relief="flat", font=("Consolas", 10), padx=14, pady=14)
             self.json_view.pack(fill="both", expand=True)
@@ -207,7 +216,8 @@ def main() -> None:
             params = dict(backend=backend, timeout=timeout,
                           ghidra_headless=launcher,
                           rizin_executable=self.rizin_var.get().strip() or "rz-bin",
-                          export_functions=self.export_var.get())
+                          export_functions=self.export_var.get(),
+                          export_pseudocode=self.pseudocode_var.get())
             self.busy = True
             self.run_button.configure(state="disabled")
             self.status_var.set(f"Analizando {Path(path).name} con {backend}…")
@@ -265,6 +275,17 @@ def main() -> None:
                 self.functions.delete(item)
             for name, entry in extract_function_rows(report):
                 self.functions.insert("", "end", values=(name, entry))
+            snippets = result.get("pseudocode", []) if isinstance(result, dict) else []
+            blocks = []
+            if isinstance(snippets, list):
+                for item in snippets[:20]:
+                    if isinstance(item, dict):
+                        code = item.get("pseudocode")
+                        text = code[:8000] if isinstance(code, str) else "Error: " + str(item.get("error", "No disponible"))[:250]
+                        blocks.append(f"// {item.get('name', 'función')} @ {item.get('entry', '?')}\n{text}")
+            self.set_text(self.pseudocode_view, "\n\n".join(blocks) if blocks else
+                          "Sin pseudocódigo. Marca Pseudocódigo y elige el motor Ghidra.\n"
+                          "El resultado es aproximado y puede contener datos confidenciales.")
             self.set_text(self.json_view, format_report_preview(report))
 
         def save_report(self):

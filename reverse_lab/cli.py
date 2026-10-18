@@ -18,7 +18,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--ghidra-headless", help="Path to analyzeHeadless launcher (Ghidra backend)")
     parser.add_argument("--timeout", type=int, default=180, help="Backend timeout in seconds")
     parser.add_argument("--export-functions", action="store_true", help="Ghidra: export names and entry addresses")
+    parser.add_argument("--export-pseudocode", action="store_true", help="Ghidra: export bounded C-like pseudocode")
     args = parser.parse_args(argv)
+    if args.export_pseudocode and args.backend != "ghidra":
+        parser.error("--export-pseudocode requires --backend ghidra")
 
     if args.backend == "ghidra" and not args.ghidra_headless:
         parser.error("--ghidra-headless is required for Ghidra")
@@ -28,6 +31,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         ghidra_headless=args.ghidra_headless,
         timeout=args.timeout,
         export_functions=args.export_functions,
+        export_pseudocode=args.export_pseudocode,
     )
     document = json.dumps(report, indent=2, ensure_ascii=False)
     if args.output:

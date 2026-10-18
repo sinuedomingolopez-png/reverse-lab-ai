@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
     if args.diagnostics_output is not None:
-        from .support import write_diagnostics
+        from reverse_lab.support import write_diagnostics
         write_diagnostics(args.diagnostics_output)
         return
     if args.self_test_output is not None:
@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> None:
             raise SystemExit(2)
         return
     if args.gui_smoke_output is not None:
-        from .gui_smoke import run_desktop_smoke
+        from reverse_lab.gui_smoke import run_desktop_smoke
         status = run_desktop_smoke()
         args.gui_smoke_output.write_text(
             json.dumps(status, indent=2, ensure_ascii=False) + "\n",

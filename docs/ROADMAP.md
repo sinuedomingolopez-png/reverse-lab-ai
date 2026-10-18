@@ -12,10 +12,15 @@
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Explorador de funciones con búsqueda, referencias de entrada/salida, pseudocódigo, navegación entre funciones y carga local de informes anteriores.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
+- Pipeline de ZIP portable en Windows (PyInstaller), con autoprueba offline del ejecutable, scripts de Ghidra empaquetados y SHA-256.
 - Comparador de informes JSON con cambios de firmas, tamaño, motores y listas de funciones.
 - Interpretación determinista sin IA y conector opcional de IA mediante Ollama local, sin enviar binarios.
 
 ## Siguiente fase: validación en herramientas reales
+
+- Probar el ZIP portable en Windows físico y contrastar advertencias de seguridad al ser un ejecutable **sin firma**.
+- Probar acceso de la versión portable a Ghidra, Cutter y Rizin instalados en Windows.
+- Probar angr externo con `REVERSE_LAB_PYTHON` y una muestra sintética en un entorno aislado.
 - Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
 - Ejecutar en un equipo con Ghidra instalado la nueva autoprueba y validar la compilación de los tres scripts Java con versiones actuales.
 - Validar Ghidra real en Windows con rutas con espacios; la invocación `.bat` cuenta por ahora con pruebas simuladas y rechazo de caracteres de shell peligrosos.

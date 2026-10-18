@@ -9,6 +9,7 @@ import json
 from collections.abc import Mapping
 
 from .workflow import analyze, BACKENDS
+from .call_graph import extract_call_edges, outgoing_calls, build_dot
 from . import report_gui
 
 
@@ -70,6 +71,8 @@ def main() -> None:
             self.timeout_var = tk.StringVar(value="180")
             self.export_var = tk.BooleanVar(value=True)
             self.pseudocode_var = tk.BooleanVar(value=False)
+            self.call_graph_var = tk.BooleanVar(value=False)
+            self.call_edges = []
             self.status_var = tk.StringVar(value="Preparado · análisis local, sin subir archivos")
             style = ttk.Style(root)
             style.theme_use("clam")
@@ -122,7 +125,8 @@ def main() -> None:
             options = ttk.Frame(container)
             options.pack(fill="x", pady=(0, 14))
             ttk.Checkbutton(options, text="Exportar funciones de Ghidra", variable=self.export_var).pack(side="left")
-            ttk.Checkbutton(options, text="Pseudocódigo (experimental)", variable=self.pseudocode_var).pack(side="left", padx=(16, 0))
+            ttk.Checkbutton(options, text="Pseudocódigo (experimental)", variable=self.pseudocode_var).pack(side="left", padx=(12, 0))
+            ttk.Checkbutton(options, text="Mapa de llamadas", variable=self.call_graph_var).pack(side="left", padx=(12, 0))
             ttk.Label(options, text="rz-bin:").pack(side="left", padx=(20, 6))
             ttk.Entry(options, textvariable=self.rizin_var, width=26).pack(side="left")
 
@@ -144,10 +148,12 @@ def main() -> None:
             summary_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             functions_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             pseudocode_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
+            call_graph_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             json_page = ttk.Frame(tabs, padding=12, style="Panel.TFrame")
             tabs.add(summary_page, text="Resumen")
             tabs.add(functions_page, text="Funciones")
             tabs.add(pseudocode_page, text="Pseudocódigo")
+            tabs.add(call_graph_page, text="Mapa de llamadas")
             tabs.add(json_page, text="JSON")
 
             self.summary = scrolledtext.ScrolledText(summary_page, bg=FIELD, fg=TEXT, insertbackground=TEXT,
@@ -166,6 +172,26 @@ def main() -> None:
                 wrap="none", relief="flat", font=("Consolas", 10), padx=14, pady=14)
             self.pseudocode_view.pack(fill="both", expand=True)
             self.pseudocode_view.configure(state="disabled")
+            call_header = ttk.Frame(call_graph_page, style="Panel.TFrame")
+            call_header.pack(fill="x", pady=(0, 8))
+            ttk.Label(call_header, text="Conexiones de llamadas estáticas detectadas", style="Panel.TLabel").pack(side="left")
+            self.dot_button = ttk.Button(call_header, text="Guardar .DOT", command=self.save_call_dot,
+                                         state="disabled")
+            self.dot_button.pack(side="right")
+            self.call_tree = ttk.Treeview(call_graph_page, columns=("caller", "callee", "entry"),
+                                          show="headings", height=7)
+            self.call_tree.heading("caller", text="FUNCIÓN ORIGEN")
+            self.call_tree.heading("callee", text="FUNCIÓN DESTINO")
+            self.call_tree.heading("entry", text="DIRECCIÓN DESTINO")
+            self.call_tree.column("caller", width=270)
+            self.call_tree.column("callee", width=290)
+            self.call_tree.column("entry", width=160)
+            self.call_tree.pack(fill="both", expand=True)
+            self.call_tree.bind("<<TreeviewSelect>>", self.show_selected_calls)
+            self.call_canvas = tk.Canvas(call_graph_page, bg=FIELD, highlightthickness=0, height=215)
+            self.call_canvas.pack(fill="x", pady=(10, 0))
+            self.call_canvas.bind("<Configure>", self.show_selected_calls)
+            self.draw_calls(None)
             self.json_view = scrolledtext.ScrolledText(json_page, bg=FIELD, fg=TEXT,
                     insertbackground=TEXT, wrap="none", relief="flat", font=("Consolas", 10), padx=14, pady=14)
             self.json_view.pack(fill="both", expand=True)
@@ -213,6 +239,9 @@ def main() -> None:
             if backend == "ghidra" and not launcher:
                 messagebox.showwarning("Ghidra", "Selecciona analyzeHeadless para usar Ghidra.")
                 return
+            if self.call_graph_var.get() and backend != "ghidra":
+                messagebox.showwarning("Mapa de llamadas", "Selecciona Ghidra para exportar conexiones.")
+                return
             if self.pseudocode_var.get() and backend != "ghidra":
                 messagebox.showwarning("Pseudocódigo", "Esta función necesita el motor Ghidra.")
                 return
@@ -220,7 +249,8 @@ def main() -> None:
                           ghidra_headless=launcher,
                           rizin_executable=self.rizin_var.get().strip() or "rz-bin",
                           export_functions=self.export_var.get(),
-                          export_pseudocode=self.pseudocode_var.get())
+                          export_pseudocode=self.pseudocode_var.get(),
+                          export_call_graph=self.call_graph_var.get())
             self.busy = True
             self.run_button.configure(state="disabled")
             self.status_var.set(f"Analizando {Path(path).name} con {backend}…")
@@ -273,6 +303,8 @@ def main() -> None:
                     summary.append(f"AVISO       {result['error']}")
                 if "function_count" in result:
                     summary.append(f"FUNCIONES   {result['function_count']}")
+                if "call_graph_count" in result:
+                    summary.append(f"LLAMADAS    {result['call_graph_count']} relaciones detectadas")
             self.set_text(self.summary, "\n".join(summary))
             for item in self.functions.get_children():
                 self.functions.delete(item)
@@ -289,7 +321,75 @@ def main() -> None:
             self.set_text(self.pseudocode_view, "\n\n".join(blocks) if blocks else
                           "Sin pseudocódigo. Marca Pseudocódigo y elige el motor Ghidra.\n"
                           "El resultado es aproximado y puede contener datos confidenciales.")
+            self.call_edges = extract_call_edges(report, limit=500)
+            self.call_tree.delete(*self.call_tree.get_children())
+            for i, edge in enumerate(self.call_edges):
+                caller, callee = edge["caller"], edge["callee"]
+                self.call_tree.insert("", "end", iid=str(i),
+                                      values=(caller["name"], callee["name"], callee["entry"]))
+            self.dot_button.configure(state="normal" if self.call_edges else "disabled")
+            if self.call_edges:
+                self.call_tree.selection_set("0")
+            self.show_selected_calls()
             self.set_text(self.json_view, format_report_preview(report))
+
+        def show_selected_calls(self, _event=None):
+            selections = self.call_tree.selection()
+            if not selections:
+                self.draw_calls(None)
+                return
+            try:
+                edge = self.call_edges[int(selections[0])]
+            except (IndexError, ValueError):
+                self.draw_calls(None)
+                return
+            self.draw_calls(edge["caller"])
+
+        def draw_calls(self, caller):
+            canvas = self.call_canvas
+            canvas.delete("all")
+            width = max(470, canvas.winfo_width())
+            if not caller:
+                canvas.create_text(width / 2, 105, text="Sin llamadas exportadas. Selecciona Ghidra y marca Mapa de llamadas.",
+                                   fill=MUTED, font=("Segoe UI", 10))
+                return
+            entry = caller["entry"]
+            callees = outgoing_calls(self.call_edges, entry, limit=8)
+            center_x = width / 2
+            canvas.create_oval(center_x - 84, 16, center_x + 84, 65,
+                               fill="#133b4b", outline=ACCENT, width=2)
+            canvas.create_text(center_x, 41, text=caller["name"][:23],
+                               fill=TEXT, font=("Segoe UI", 10, "bold"))
+            if not callees:
+                canvas.create_text(center_x, 145, text="No se han detectado llamadas directas.", fill=MUTED)
+                return
+            span = width - 100
+            gap = span / max(len(callees), 1)
+            for i, (name, address) in enumerate(callees):
+                x = 50 + (i + .5) * gap
+                canvas.create_line(center_x, 65, x, 145, fill="#6c9fb5", width=2,
+                                   arrow="last", arrowshape=(10, 12, 4))
+                canvas.create_rectangle(x - min(72, gap * .4), 146,
+                                        x + min(72, gap * .4), 201,
+                                        fill="#192d3b", outline="#4ce0d2")
+                canvas.create_text(x, 163, text=name[:max(6, int(gap // 8))],
+                                   fill=TEXT, font=("Segoe UI", 9))
+                canvas.create_text(x, 186, text=address[:16], fill=MUTED,
+                                   font=("Consolas", 8))
+
+        def save_call_dot(self):
+            if not self.call_edges or self.report is None:
+                return
+            path = filedialog.asksaveasfilename(title="Guardar mapa de llamadas", defaultextension=".dot",
+                   filetypes=[("Graphviz DOT", "*.dot")])
+            if not path:
+                return
+            try:
+                Path(path).write_text(build_dot(self.report, limit=5000), encoding="utf-8")
+            except (OSError, ValueError) as exc:
+                messagebox.showerror("Error al exportar mapa", str(exc))
+                return
+            self.status_var.set("Mapa DOT guardado en " + path)
 
         def save_report(self):
             if self.report is None:

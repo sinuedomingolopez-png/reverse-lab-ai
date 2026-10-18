@@ -19,7 +19,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--timeout", type=int, default=180, help="Backend timeout in seconds")
     parser.add_argument("--export-functions", action="store_true", help="Ghidra: export names and entry addresses")
     parser.add_argument("--export-pseudocode", action="store_true", help="Ghidra: export bounded C-like pseudocode")
+    parser.add_argument("--export-call-graph", action="store_true", help="Ghidra: export bounded static function calls")
     args = parser.parse_args(argv)
+    if args.export_call_graph and args.backend != "ghidra":
+        parser.error("--export-call-graph requires --backend ghidra")
     if args.export_pseudocode and args.backend != "ghidra":
         parser.error("--export-pseudocode requires --backend ghidra")
 
@@ -32,6 +35,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         timeout=args.timeout,
         export_functions=args.export_functions,
         export_pseudocode=args.export_pseudocode,
+        export_call_graph=args.export_call_graph,
     )
     document = json.dumps(report, indent=2, ensure_ascii=False)
     if args.output:

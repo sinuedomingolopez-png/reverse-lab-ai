@@ -20,6 +20,7 @@ def analyze(
     timeout: int = 180,
     export_functions: bool = False,
     export_pseudocode: bool = False,
+    export_call_graph: bool = False,
 ) -> dict:
     """Inspect an authorized file and optionally use one external static-analysis backend."""
     if backend not in BACKENDS:
@@ -46,6 +47,8 @@ def analyze(
         ghidra_options = {"timeout": timeout, "export_functions": export_functions}
         if export_pseudocode:
             ghidra_options["export_pseudocode"] = True
+        if export_call_graph:
+            ghidra_options["export_call_graph"] = True
         report["analysis"] = analyze_with_ghidra(
             path, ghidra_headless, **ghidra_options
         )

@@ -5,7 +5,7 @@
 - CLI con selección de motor: básico, LIEF, Rizin y Ghidra.
 - Adaptador LIEF opcional.
 - Adaptador Rizin opcional (`rz-bin -Ij`).
-- Adaptador Ghidra headless opcional, exportador de funciones y pseudocódigo C aproximado con límites estrictos (experimental).
+- Adaptador Ghidra headless opcional, exportador de funciones, pseudocódigo C aproximado y mapa de llamadas estáticas con límites estrictos (experimental).
 - Diagnóstico local de motores y pruebas unitarias.
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
@@ -21,7 +21,7 @@
 ## Después
 - Conector Cutter como aplicación visual externa.
 - angr en un contenedor o máquina virtual para análisis simbólico controlado.
-- Mejorar la interfaz con comparación lado a lado de informes, historial local y una vista interactiva de funciones.
+- Mejorar la interfaz con comparación lado a lado de informes y un historial local. El mapa de llamadas ya tiene vista interactiva y exportación DOT.
 - Mejorar la explicación con IA: permitir revisión humana de fragmentos de pseudocódigo autorizados, manteniendo la privacidad.
 - Conexión con ChatGPT/Codex a través de permisos explícitos (no está implementada).
 

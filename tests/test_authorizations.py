@@ -29,6 +29,7 @@ class AuthorizationTests(unittest.TestCase):
         self.assertEqual(self.store.list_files(), [])
 
     def test_root_and_size_checks(self):
+        (self.root / "elsewhere").mkdir()
         with self.assertRaises(ValueError):
             self.store.grant(self.target, root=self.root / "elsewhere")
         with self.assertRaises(ValueError):

@@ -10,7 +10,7 @@ from collections.abc import Mapping
 
 from .workflow import analyze, BACKENDS
 from .call_graph import extract_call_edges, outgoing_calls, build_dot
-from . import report_gui, function_explorer_gui
+from . import report_gui, function_explorer_gui, ghidra_diagnostic_gui
 from .reports import load_report
 
 
@@ -122,6 +122,12 @@ def main() -> None:
                 row=1, column=1, sticky="ew", padx=16, pady=(4, 0))
             ttk.Entry(settings, textvariable=self.ghidra_var).grid(row=1, column=2, sticky="ew", pady=(4, 0))
             settings.columnconfigure(2, weight=1)
+            ttk.Button(
+                settings, text="Autoprueba Ghidra",
+                command=lambda: ghidra_diagnostic_gui.open_ghidra_diagnostic(
+                    self.root, self.ghidra_var.get().strip()
+                ),
+            ).grid(row=2, column=2, sticky="e", pady=(6, 0))
 
             options = ttk.Frame(container)
             options.pack(fill="x", pady=(0, 14))

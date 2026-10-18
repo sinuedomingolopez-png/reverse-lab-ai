@@ -2,7 +2,7 @@
 
 Documentación oficial: https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/RuntimeScripts/support/analyzeHeadlessREADME.md
 
-1. Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases
+1. Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases\n   y comprueba que tengas la versión de Java/JDK exigida por ese lanzamiento.
 2. Encuentra `support/analyzeHeadless` en Linux/macOS o `support/analyzeHeadless.bat` en Windows.
 3. Analiza una muestra autorizada:
 
@@ -10,6 +10,15 @@ Documentación oficial: https://github.com/NationalSecurityAgency/ghidra/blob/ma
 python -m reverse_lab.cli ejemplo.bin --backend ghidra \
   --ghidra-headless /ruta/ghidra/support/analyzeHeadless \
   --export-functions --export-pseudocode --export-call-graph --output analisis.json
+```
+
+### Autoprueba previa
+
+Antes de analizar tus propios programas, utiliza la [autoprueba de integración](GHIDRA_SELFTEST.md):
+
+```bash
+python -m reverse_lab.ghidra_probe --check-only
+python -m reverse_lab.ghidra_probe --ghidra-headless /ruta/ghidra/support/analyzeHeadless --output diagnostico-ghidra.json
 ```
 
 Sin `--export-functions`, el adaptador devuelve estado de ejecución y extractos del registro. Con el flag, utiliza `reverse_lab/ghidra_scripts/ExportFunctions.java` para generar nombres y direcciones de entrada de funciones en JSON.

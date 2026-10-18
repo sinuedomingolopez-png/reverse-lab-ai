@@ -18,7 +18,7 @@ APP_NAME = "ReverseLabAI"
 
 
 def portable_readme() -> str:
-    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.10.0)
+    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.11.0)
 
 1. Extrae el ZIP completo a una carpeta local.
 2. Haz doble clic en ReverseLabAI.exe (mantén la carpeta _internal).
@@ -38,7 +38,30 @@ No desactives protecciones de Windows para ejecutarlo.
 No copies binarios privados, credenciales o archivos sospechosos a una cuenta
 en la nube. Para muestras desconocidas usa una maquina virtual aislada.
 
+SI LA APLICACION NO ABRE:
+Haz doble clic en DIAGNOSTICO-WINDOWS.cmd dentro de esta carpeta.
+Guardara un resumen tecnico sin rutas privadas en la carpeta TEMP de usuario.
+No analiza muestras ni envia archivos a Internet.
+
 No es un instalador. No modifica el Registro de Windows ni instala servicios.
+"""
+
+
+def windows_diagnostic_launcher() -> str:
+    """Simple opt-in troubleshooting script. Exports only sanitized metadata."""
+    return """@echo off
+setlocal
+cd /d "%~dp0"
+set "OUT=%TEMP%\\ReverseLabAI-diagnostico.json"
+echo Comprobando Reverse Lab AI sin analizar archivos...
+"%~dp0ReverseLabAI.exe" --diagnostics-output "%OUT%"
+if errorlevel 1 (
+  echo No se pudo generar el diagnostico.
+) else (
+  echo Diagnostico creado en: "%OUT%"
+  echo Contiene solo disponibilidad de motores; no guarda rutas privadas.
+)
+pause
 """
 
 
@@ -63,7 +86,7 @@ def build_command(source_root: Path) -> list[str]:
 
 
 def make_archive(
-    app_directory: Path, *, version: str = "0.10.0",
+    app_directory: Path, *, version: str = "0.11.0",
 ) -> tuple[Path, Path]:
     """Create a portable ZIP and separate SHA-256 manifest (not a signature)."""
     if not (app_directory / f"{APP_NAME}.exe").is_file():
@@ -158,11 +181,28 @@ def main(argv: list[str] | None = None) -> None:
     if report.get("status") != "ready" or report.get("frozen") is not True:
         raise RuntimeError("Portable Windows bundle does not include the required scripts")
 
+    support_path = root / "dist" / "support-smoke.json"
+    support_process = subprocess.run(
+        [str(executable), "--diagnostics-output", str(support_path)],
+        cwd=root, check=False, timeout=30,
+    )
+    if support_process.returncode != 0 or not support_path.is_file():
+        raise RuntimeError("Portable EXE could not create a privacy-safe support report")
+    support = json.loads(support_path.read_text(encoding="utf-8"))
+    if (support.get("schema") != "reverse-lab-support-v1"
+            or support.get("portable") is not True
+            or support.get("bundle", {}).get("status") != "ready"):
+        raise RuntimeError("Portable EXE failed its offline support diagnostics")
+
+
     gui_smoke_path = root / "dist" / "gui-smoke.json"
     gui_report = attempt_gui_smoke(executable, gui_smoke_path)
     if gui_report["status"] == "not_verified":
         print("The ZIP is built, but real Windows GUI usage still needs a manual check.")
 
+    (app / "DIAGNOSTICO-WINDOWS.cmd").write_text(
+        windows_diagnostic_launcher(), encoding="utf-8",
+    )
     (app / "LEEME-PORTABLE.txt").write_text(portable_readme(), encoding="utf-8")
     archive, checksum = make_archive(app)
     print(f"Portable ZIP: {archive}")

@@ -51,11 +51,11 @@ Sustituye la ruta de ejemplo por el `python.exe` donde instalaste angr. El ZIP i
 
 1. Ejecuta las pruebas de Python sobre Windows.
 2. Construye la carpeta portable con PyInstaller.
-3. Ejecuta el `.exe` compilado con `--self-test-output` (sin mostrar ventanas ni analizar muestras), y después con `--gui-smoke-output` para comprobar que crea una ventana real y sus controles sin procesar binarios.
+3. Ejecuta el `.exe` compilado con `--self-test-output` (sin mostrar ventanas ni analizar muestras), y después con `--gui-smoke-output` para intentar comprobar que crea una ventana real y sus controles sin procesar binarios. En un runner Windows sin escritorio interactivo puede quedar como `not_verified`; esto **no es una prueba superada** de la ventana.
 4. Comprueba que están los tres scripts Java de Ghidra y que Python detecta correctamente el estado `frozen`.
-5. Crea el ZIP, calcula su SHA-256 y comprueba el manifiesto **y el resultado de la ventana** antes de subir el artifact.
+5. Crea el ZIP, calcula su SHA-256 y comprueba el manifiesto **y el estado explícito de la comprobación gráfica** antes de subir el artifact.
 
-**Abrir la ventana en un runner de GitHub Windows no equivale a probarla en un ordenador físico** ni demuestra que Cutter, Rizin, Ghidra o angr reales funcionen en el equipo del usuario. Su integración debe probarse localmente.
+**Un runner Windows de GitHub puede no disponer de un escritorio interactivo: si el test se bloquea, el estado será `not_verified`. Abrir la ventana en Linux virtual o superar pruebas de Python no equivale a probarla en un ordenador físico Windows** ni demuestra que Cutter, Rizin, Ghidra o angr reales funcionen en el equipo del usuario. Su integración debe probarse localmente.
 
 ## Compilar por tu cuenta
 

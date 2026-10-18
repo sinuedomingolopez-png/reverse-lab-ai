@@ -38,9 +38,14 @@ def collect_portable_status(*, package_dir: Path | None = None) -> dict:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Reverse Lab AI portable launcher")
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--self-test-output", type=Path,
         help="Write JSON bundle verification (no GUI, no sample analysis)",
+    )
+    mode.add_argument(
+        "--gui-smoke-output", type=Path,
+        help="Create real Tkinter window and write JSON checks (no sample analysis)",
     )
     args = parser.parse_args(argv)
     if args.self_test_output is not None:
@@ -50,6 +55,16 @@ def main(argv: list[str] | None = None) -> None:
         )
         if report["status"] != "ready":
             raise SystemExit(2)
+        return
+    if args.gui_smoke_output is not None:
+        from .gui_smoke import run_desktop_smoke
+        status = run_desktop_smoke()
+        args.gui_smoke_output.write_text(
+            json.dumps(status, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        if status["status"] != "passed":
+            raise SystemExit(3)
         return
     from reverse_lab.gui import main as gui_main
     gui_main()

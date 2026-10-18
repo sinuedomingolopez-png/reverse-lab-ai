@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.7.0)
+## Interfaz visual local (0.8.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -20,6 +20,8 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Tamaño de archivo, SHA-256 e informes JSON.
 - Adaptador LIEF para metadatos del binario (requiere instalar LIEF).
 - Adaptador Rizin con `rz-bin -Ij` para metadatos JSON (requiere Rizin).
+- **Cutter externo**: abrir el archivo seleccionado en Cutter mediante un botón, con confirmación explícita (requiere instalar Cutter).
+- **angr CFGFast**: analizar funciones, nodos y conexiones del CFG en un proceso separado, sin cargar dependencias compartidas (requiere instalar angr).
 - Adaptador Ghidra headless (requiere Ghidra), exportador experimental de nombres/direcciones, pseudocódigo C aproximado y **mapa estático de llamadas entre funciones**.
 - Diagnóstico local de LIEF, Ghidra, Rizin, Cutter y angr (sin instalarlos), y autoprueba opcional de Ghidra sobre un ELF sintético.
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
@@ -31,6 +33,21 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 En la pestaña **Funciones**, pulsa **Explorar funciones** para abrir el navegador de funciones con búsqueda y fichas vinculadas al pseudocódigo y a las llamadas. Haz doble clic en una función, o en una relación de **Mapa de llamadas**, para abrir su ficha.
 
 También puedes seleccionar **Abrir informe JSON** para explorar análisis ya guardados, sin repetir el procesamiento. El navegador trabaja localmente y no comparte pseudocódigo con modelos de IA. Consulta la [guía del explorador](docs/FUNCTION_EXPLORER.md).
+
+## Cutter y angr (0.8)
+
+La aplicación ofrece **Abrir archivo en Cutter** para enviar una muestra autorizada al editor gráfico Cutter ya instalado, sin incrustarlo ni instalarlo.
+
+Para el análisis de flujo estático `CFGFast` de angr (sin ejecutar el programa objetivo), instala la dependencia opcional y analiza:
+
+```bash
+python -m pip install angr
+python -m reverse_lab.cli ejemplo.bin --backend angr --timeout 90 --output informe-angr.json
+```
+
+También puedes elegir `angr` desde la interfaz. Requiere una instalación local propia y tiene límite de 32 MiB para la muestra, 600 segundos para el proceso y 300 funciones exportadas por defecto. No es una máquina virtual ni un sandbox seguro: los programas desconocidos deben analizarse en un entorno aislado.
+
+Instrucciones y límites: [Cutter y angr](docs/CUTTER_ANGR.md).
 
 ## Autoprueba real de Ghidra (0.7)
 
@@ -113,6 +130,6 @@ Más información: [instalación en Windows](docs/INSTALL_WINDOWS.md), [Rizin](d
 
 El proyecto **no incluye ni instala automáticamente** Ghidra, Rizin, Cutter, LIEF o angr. No descompila por sí mismo: delega el análisis avanzado a esos motores externos.
 
-Analiza solo muestras autorizadas. Los analizadores de binarios pueden tener vulnerabilidades; usa entornos aislados para archivos desconocidos. No subas binarios propietarios, credenciales ni muestras confidenciales a este repositorio **público**. Cutter y angr aún no disponen de adaptadores de análisis.
+Analiza solo muestras autorizadas. Los analizadores de binarios pueden tener vulnerabilidades; usa entornos aislados para archivos desconocidos. No subas binarios propietarios, credenciales ni muestras confidenciales a este repositorio **público**. Cutter se abre como aplicación externa; angr aporta `CFGFast` estático. No existe una integración de depuración o ejecución simbólica, ni una conexión remota con ChatGPT.
 
 Los resultados JSON son datos no confiables: nunca ejecutes instrucciones o código extraído de una muestra sin revisarlo.

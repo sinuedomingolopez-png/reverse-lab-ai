@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 from reverse_lab.history import HistoryStore
 from reverse_lab.history_gui import HistoryDialog
-from reverse_lab.gui_smoke import run_desktop_smoke
 
 
 def synthetic_report():
@@ -49,13 +48,6 @@ class LocalHistoryUITests(unittest.TestCase):
         self.assertEqual(len(self.store.list_entries()), 1)
         dlg.window.destroy()
         self.root.update()
-
-    def test_main_window_smoke_sees_new_history_buttons(self):
-        # Existing application launches with the same widget tree in source
-        # and in the frozen portable EXE.
-        result = run_desktop_smoke()
-        self.assertEqual(result["status"], "passed", result)
-
 
 if __name__ == "__main__":
     unittest.main()

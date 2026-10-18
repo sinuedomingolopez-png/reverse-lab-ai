@@ -102,7 +102,9 @@ python -m reverse_lab.cli programa.exe --backend ghidra \
   --export-functions --export-pseudocode --export-call-graph --output analisis.json
 ```
 
-El flag `--export-call-graph` solicita un conjunto acotado de llamadas estáticas entre funciones, consultable en la nueva pestaña **Mapa de llamadas** y exportable a formato Graphviz DOT. Consulta [la guía del mapa de llamadas](docs/CALL_GRAPH.md).\n\nEl flag `--export-functions` solicita un listado de funciones. `--export-pseudocode` permite exportar pseudocódigo C aproximado con límites estrictos, solo cuando se solicita. En la interfaz hay una nueva pestaña «Pseudocódigo».
+El flag `--export-call-graph` solicita un conjunto acotado de llamadas estáticas entre funciones, consultable en la nueva pestaña **Mapa de llamadas** y exportable a formato Graphviz DOT. Consulta [la guía del mapa de llamadas](docs/CALL_GRAPH.md).
+
+El flag `--export-functions` solicita un listado de funciones. `--export-pseudocode` permite exportar pseudocódigo C aproximado con límites estrictos, solo cuando se solicita. En la interfaz hay una nueva pestaña «Pseudocódigo».
 El lanzamiento `.bat` de Windows incorpora protecciones contra caracteres de shell peligrosos y pruebas simuladas; sigue pendiente una ejecución real en Windows. Tampoco se ha validado aún el script Java con una instalación real de Ghidra.
 
 Más información: [instalación en Windows](docs/INSTALL_WINDOWS.md), [Rizin](docs/RIZIN.md), [Ghidra](docs/GHIDRA.md) y [plan de trabajo](docs/ROADMAP.md).

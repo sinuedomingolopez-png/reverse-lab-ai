@@ -6,7 +6,7 @@
 - Adaptador LIEF opcional.
 - Adaptador Rizin opcional (`rz-bin -Ij`).
 - Adaptador Ghidra headless opcional, exportador de funciones, pseudocódigo C aproximado y mapa de llamadas estáticas con límites estrictos (experimental).
-- Diagnóstico local de motores y pruebas unitarias.
+- Diagnóstico local de motores, autoprueba opcional de Ghidra con una muestra ELF sintética y pruebas unitarias.
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Explorador de funciones con búsqueda, referencias de entrada/salida, pseudocódigo, navegación entre funciones y carga local de informes anteriores.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
@@ -15,7 +15,7 @@
 
 ## Siguiente fase: validación en herramientas reales
 - Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
-- Validar Ghidra headless y la compilación de ExportFunctions.java con versiones actuales.
+- Ejecutar en un equipo con Ghidra instalado la nueva autoprueba y validar la compilación de los tres scripts Java con versiones actuales.
 - Validar Ghidra real en Windows con rutas con espacios; la invocación `.bat` cuenta por ahora con pruebas simuladas y rechazo de caracteres de shell peligrosos.
 - Añadir tests de integración condicionados por disponibilidad de ejecutables.
 

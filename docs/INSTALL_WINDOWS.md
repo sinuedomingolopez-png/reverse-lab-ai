@@ -51,6 +51,16 @@ rz-bin -h
 
 Si no se encuentra `rz-bin`, puedes pasar `--rizin-executable` con la ruta completa al ejecutable.
 
+## Autoprueba de Ghidra (0.7)
+
+Después de instalar Ghidra, abre la interfaz y pulsa **Autoprueba Ghidra**. Alternativamente, ejecuta en PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m reverse_lab.ghidra_probe --ghidra-headless "C:\Herramientas\ghidra\support\analyzeHeadless.bat" --output diagnostico-ghidra.json
+```
+
+Sustituye la ruta de ejemplo por la real. Si Ghidra no está instalado, verás el estado `missing`; no se descarga ni se instala automáticamente. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).
+
 ## Ghidra (experimental)
 
 Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases. El adaptador headless requiere señalar `support/analyzeHeadless.bat`.

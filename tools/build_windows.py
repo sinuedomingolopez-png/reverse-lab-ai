@@ -18,7 +18,7 @@ APP_NAME = "ReverseLabAI"
 
 
 def portable_readme() -> str:
-    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.9.0)
+    return """REVERSE LAB AI - VERSION PORTABLE DE WINDOWS (0.10.0)
 
 1. Extrae el ZIP completo a una carpeta local.
 2. Haz doble clic en ReverseLabAI.exe (mantén la carpeta _internal).
@@ -63,7 +63,7 @@ def build_command(source_root: Path) -> list[str]:
 
 
 def make_archive(
-    app_directory: Path, *, version: str = "0.9.0",
+    app_directory: Path, *, version: str = "0.10.0",
 ) -> tuple[Path, Path]:
     """Create a portable ZIP and separate SHA-256 manifest (not a signature)."""
     if not (app_directory / f"{APP_NAME}.exe").is_file():
@@ -114,11 +114,26 @@ def main(argv: list[str] | None = None) -> None:
     if report.get("status") != "ready" or report.get("frozen") is not True:
         raise RuntimeError("Portable Windows bundle does not include the required scripts")
 
+    gui_smoke_path = root / "dist" / "gui-smoke.json"
+    gui_result = subprocess.run(
+        [str(executable), "--gui-smoke-output", str(gui_smoke_path)],
+        cwd=root, check=False, timeout=60,
+    )
+    if gui_result.returncode != 0 or not gui_smoke_path.is_file():
+        details = (gui_smoke_path.read_text(encoding="utf-8")[:1500]
+                   if gui_smoke_path.is_file() else "GUI smoke did not produce a report.")
+        raise RuntimeError(
+            f"Portable GUI smoke test failed (exit={gui_result.returncode}): {details}"
+        )
+    gui_report = json.loads(gui_smoke_path.read_text(encoding="utf-8"))
+    if gui_report.get("status") != "passed" or gui_report.get("window_created") is not True:
+        raise RuntimeError("Portable GUI failed to create its desktop or required controls")
+
     (app / "LEEME-PORTABLE.txt").write_text(portable_readme(), encoding="utf-8")
     archive, checksum = make_archive(app)
     print(f"Portable ZIP: {archive}")
     print(f"SHA256 file: {checksum}")
-    print("Smoke-test: OK (only local bundle integrity, not Ghidra/Cutter/angr)")
+    print("Smoke-tests: bundle integrity and real Tkinter window OK (no engines run)")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,10 @@ reverse-lab-gui
 
 En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-reverse-lab.bat**. La interfaz no envía archivos a internet, no levanta un servidor y no necesita cuenta de pago.
 
+## Autoprueba de Ghidra
+
+Pulsa **Autoprueba Ghidra** junto al campo de ruta a `analyzeHeadless`. La ventana ofrece detección sin ejecución y una prueba completa que crea un ELF sintético, lanza tu instalación local de Ghidra y comprueba exportaciones JSON. No descarga Ghidra ni utiliza archivos personales. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).
+
 ## Explorador de funciones
 
 En la pestaña **Funciones**, pulsa **Explorar funciones**, o haz doble clic sobre una función para abrir su ficha. Podrás buscar por nombre/dirección, navegar entre funciones relacionadas, consultar pseudocódigo y regresar con **Anterior**. En **Mapa de llamadas**, un doble clic abre la función destino.

@@ -43,7 +43,8 @@ def format_report_preview(report: Mapping, *, limit: int = 180_000) -> str:
     return text
 
 
-def main() -> None:
+def main(*, run_loop: bool = True):
+    """Build the local desktop; tests may request a window without event loop."""
     try:
         import tkinter as tk
         from tkinter import filedialog, messagebox, scrolledtext, ttk
@@ -162,6 +163,8 @@ def main() -> None:
                        command=self.save_to_local_history).pack(side="left", padx=(12, 6))
             ttk.Button(history_controls, text="Historial local",
                        command=self.open_local_history).pack(side="left")
+            ttk.Button(history_controls, text="Guardar diagnóstico",
+                       command=self.save_support_diagnostic).pack(side="right")
             ttk.Label(container, textvariable=self.status_var, style="Sub.TLabel").pack(anchor="w", pady=(1, 10))
 
             tabs = ttk.Notebook(container)
@@ -449,6 +452,28 @@ def main() -> None:
                 return
             self.status_var.set("Mapa DOT guardado en " + path)
 
+        def save_support_diagnostic(self):
+            from .support import write_diagnostics
+            destination = filedialog.asksaveasfilename(
+                title="Guardar diagnóstico local sin datos privados",
+                defaultextension=".json",
+                initialfile="ReverseLabAI-diagnostico.json",
+                filetypes=[("Archivo JSON", "*.json")],
+            )
+            if not destination:
+                return
+            try:
+                write_diagnostics(destination)
+            except (OSError, ValueError) as exc:
+                messagebox.showerror("Diagnóstico", str(exc))
+                return
+            self.status_var.set("Diagnóstico técnico guardado (sin rutas ni muestras privadas)")
+            messagebox.showinfo(
+                "Diagnóstico guardado",
+                "El archivo contiene solo estados de herramientas y del paquete. "
+                "No incluye binarios, rutas de usuario ni pseudocódigo."
+            )
+
         def save_to_local_history(self):
             saved = history_gui.save_current_report(self.root, self.report)
             if saved is not None:
@@ -521,7 +546,9 @@ def main() -> None:
     except tk.TclError as exc:
         raise RuntimeError("No graphical desktop is available for Tkinter.") from exc
     ReverseLabApp(root)
-    root.mainloop()
+    if run_loop:
+        root.mainloop()
+    return root
 
 
 if __name__ == "__main__":

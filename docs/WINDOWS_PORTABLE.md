@@ -7,9 +7,9 @@ La versión portable se compila **en GitHub Actions sobre Windows** usando PyIns
 1. Abre el repositorio y entra en **Actions → Windows portable**:
    https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/windows-portable.yml
 2. Abre una ejecución que indique **Success**.
-3. En **Artifacts**, descarga `ReverseLabAI-0.9.0-windows-x64`. GitHub puede pedir inicio de sesión y los archivos pueden caducar a los 14 días.
-4. Extrae los archivos del artifact y, a continuación, descomprime `ReverseLabAI-0.9.0-windows-x64.zip`. Conserva completa la carpeta `ReverseLabAI`, especialmente `_internal`.
-5. Haz doble clic en **ReverseLabAI.exe** dentro de la carpeta. El análisis básico y la interfaz no necesitan Python instalado.
+3. En **Artifacts**, descarga `ReverseLabAI-0.10.0-windows-x64`. GitHub puede pedir inicio de sesión y los archivos pueden caducar a los 14 días.
+4. Extrae los archivos del artifact y, a continuación, descomprime `ReverseLabAI-0.10.0-windows-x64.zip`. Conserva completa la carpeta `ReverseLabAI`, especialmente `_internal`.
+5. Haz doble clic en **ReverseLabAI.exe** dentro de la carpeta. El análisis básico, el historial local y la interfaz no necesitan Python instalado.
 
 **El ejecutable todavía no está firmado**. Windows puede mostrar una advertencia de SmartScreen: no desactives las protecciones del sistema. Verifica la procedencia del workflow de GitHub, el código fuente, el archivo de checksum y, si tienes dudas, utiliza la versión Python original.
 
@@ -18,8 +18,8 @@ La versión portable se compila **en GitHub Actions sobre Windows** usando PyIns
 Junto al ZIP hay un archivo `.zip.sha256` con el hash esperado. En PowerShell, dentro de la carpeta de descargas:
 
 ```powershell
-Get-FileHash .\ReverseLabAI-0.9.0-windows-x64.zip -Algorithm SHA256
-Get-Content .\ReverseLabAI-0.9.0-windows-x64.zip.sha256
+Get-FileHash .\ReverseLabAI-0.10.0-windows-x64.zip -Algorithm SHA256
+Get-Content .\ReverseLabAI-0.10.0-windows-x64.zip.sha256
 ```
 
 Los dos hashes deben coincidir. El hash detecta cambios accidentales o alteraciones respecto al manifest, **pero no garantiza por sí mismo la identidad del autor**.
@@ -51,11 +51,11 @@ Sustituye la ruta de ejemplo por el `python.exe` donde instalaste angr. El ZIP i
 
 1. Ejecuta las pruebas de Python sobre Windows.
 2. Construye la carpeta portable con PyInstaller.
-3. Ejecuta el `.exe` compilado con `--self-test-output` (sin mostrar ventanas ni analizar muestras).
+3. Ejecuta el `.exe` compilado con `--self-test-output` (sin mostrar ventanas ni analizar muestras), y después con `--gui-smoke-output` para comprobar que crea una ventana real y sus controles sin procesar binarios.
 4. Comprueba que están los tres scripts Java de Ghidra y que Python detecta correctamente el estado `frozen`.
-5. Crea el ZIP, calcula su SHA-256 y comprueba el manifiesto antes de subir el artifact.
+5. Crea el ZIP, calcula su SHA-256 y comprueba el manifiesto **y el resultado de la ventana** antes de subir el artifact.
 
-**No equivale a probar la ventana en un ordenador físico** ni demuestra que Cutter, Rizin, Ghidra o angr reales funcionen en el equipo del usuario. Su integración debe probarse localmente.
+**Abrir la ventana en un runner de GitHub Windows no equivale a probarla en un ordenador físico** ni demuestra que Cutter, Rizin, Ghidra o angr reales funcionen en el equipo del usuario. Su integración debe probarse localmente.
 
 ## Compilar por tu cuenta
 
@@ -66,7 +66,7 @@ py -m pip install "pyinstaller>=6.15,<7"
 py tools\build_windows.py
 ```
 
-Obtendrás `dist/ReverseLabAI-0.9.0-windows-x64.zip`, su manifiesto SHA-256 y `dist/portable-smoke.json`.
+Obtendrás `dist/ReverseLabAI-0.10.0-windows-x64.zip`, su manifiesto SHA-256 y `dist/portable-smoke.json`.
 
 ## Seguridad y costes
 

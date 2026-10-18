@@ -27,7 +27,7 @@ jobs:
       - run: python -m compileall -q reverse_lab
 
   real-lief-smoke:
-    name: Installed LIEF (${{ matrix.os }})
+    name: Installed LIEF native
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:

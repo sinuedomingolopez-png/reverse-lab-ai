@@ -12,6 +12,7 @@ _REQUIRED_CONTROLS = (
     "Guardar en historial",
     "Autoprueba Ghidra",
     "Guardar diagnóstico",
+    "Probar LIEF/angr",
 )
 
 

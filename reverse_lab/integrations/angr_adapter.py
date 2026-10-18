@@ -6,6 +6,8 @@ Timeout, input-size and report-size controls are NOT a secure sandbox.
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +39,52 @@ def _check_report(report: object, *, max_functions: int) -> dict:
     return report
 
 
+def worker_command(target: str | Path, *, max_functions: int = 300) -> list[str]:
+    """Choose a real Python interpreter, even when the UI is a frozen EXE.
+
+    A frozen GUI executable is NOT a Python interpreter and must never receive
+    '-m'. The bundled worker source is invoked by an external Python whose angr
+    dependency the user installed separately.
+    """
+    path = str(target)
+    if not getattr(sys, "frozen", False):
+        return [
+            sys.executable, "-m", "reverse_lab.integrations.angr_worker",
+            "--input", path, "--max-functions", str(max_functions),
+        ]
+
+    configured = os.environ.get("REVERSE_LAB_PYTHON", "").strip()
+    if configured:
+        selected = Path(configured).expanduser()
+        if not selected.is_file():
+            raise RuntimeError(
+                "REVERSE_LAB_PYTHON does not point to an installed Python "
+                "interpreter. Set it to python.exe with angr installed."
+            )
+        interpreter = str(selected.resolve())
+    else:
+        interpreter = shutil.which("python") or shutil.which("python3")
+        if not interpreter or not Path(interpreter).is_file():
+            raise RuntimeError(
+                "The portable app needs a separate Python installation for angr. "
+                "Install Python and angr, then set REVERSE_LAB_PYTHON to python.exe."
+            )
+
+    bundle = getattr(sys, "_MEIPASS", None)
+    worker = (
+        Path(bundle) / "reverse_lab" / "integrations" / "angr_worker.py"
+        if bundle else None
+    )
+    if worker is None or not worker.is_file():
+        raise RuntimeError(
+            "Portable bundle is missing angr_worker.py; reinstall the complete folder."
+        )
+    return [
+        interpreter, str(worker),
+        "--input", path, "--max-functions", str(max_functions),
+    ]
+
+
 def inspect_with_angr(
     target: str | Path, *, timeout: int = 60, max_functions: int = 300,
 ) -> dict:
@@ -50,10 +98,7 @@ def inspect_with_angr(
         raise ValueError("angr target must be a regular file")
     if path.stat().st_size > _MAX_INPUT:
         raise ValueError("angr input exceeds the 32 MiB size limit")
-    command = [
-        sys.executable, "-m", "reverse_lab.integrations.angr_worker",
-        "--input", str(path), "--max-functions", str(max_functions),
-    ]
+    command = worker_command(path, max_functions=max_functions)
     try:
         result = subprocess.run(
             command, stdin=subprocess.DEVNULL, capture_output=True,

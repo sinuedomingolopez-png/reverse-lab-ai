@@ -1,5 +1,11 @@
 # Reverse Lab AI: instalación local en Windows
 
+## Opción portable (sin instalar Python)
+
+Puedes descargar un ZIP que incluye `ReverseLabAI.exe` en [GitHub Actions → Windows portable](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/windows-portable.yml). Extrae completa la carpeta `ReverseLabAI` y abre el ejecutable; el modo básico no exige Python. **El .exe no está firmado**. No desactives SmartScreen; comprueba el SHA-256. Consulta [WINDOWS_PORTABLE.md](WINDOWS_PORTABLE.md) para detalles y limitaciones.
+
+## Opción desde código fuente (Python instalado)
+
 Necesitas Python 3.10 o posterior y Git.
 
 Abre PowerShell:

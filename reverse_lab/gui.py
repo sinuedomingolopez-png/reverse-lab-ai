@@ -14,6 +14,7 @@ from . import report_gui, function_explorer_gui, ghidra_diagnostic_gui
 from .reports import load_report
 from .integrations.cutter_adapter import launch_cutter
 from . import history_gui
+from . import engine_probe_gui
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -150,6 +151,8 @@ def main(*, run_loop: bool = True):
             self.save_button = ttk.Button(actions, text="Guardar JSON", command=self.save_report, state="disabled")
             self.save_button.pack(side="left", padx=10)
             ttk.Button(actions, text="Comprobar herramientas", command=self.check_tools).pack(side="left")
+            ttk.Button(actions, text="Probar LIEF/angr",
+                       command=lambda: engine_probe_gui.open_engine_probe(self.root)).pack(side="left", padx=(6, 0))
             ttk.Button(actions, text="Comparar JSON", command=lambda: report_gui.compare_saved_reports(self.root)).pack(side="left", padx=(6, 0))
             ttk.Button(actions, text="Explicar", command=lambda: report_gui.explain_current_report(self.root, self.report)).pack(side="left", padx=(6, 0))
             self.progress = ttk.Progressbar(actions, mode="indeterminate", length=145)

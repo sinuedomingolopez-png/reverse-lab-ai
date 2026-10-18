@@ -68,7 +68,10 @@ class AnalysisJobs:
         if type(max_jobs) is not int or not 1 <= max_jobs <= 16:
             raise ValueError("max_jobs must be 1..16")
         self.grants, self.timeout, self.memory_mb = grants, timeout, memory_mb
-        self.ghidra_headless, self.max_jobs = ghidra_headless, max_jobs
+        from .ghidra_probe import discover_ghidra
+        detected = discover_ghidra(ghidra_headless)
+        self.ghidra_headless = str(detected) if detected else None
+        self.max_jobs = max_jobs
         self._jobs = {}
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="reverse-lab")
@@ -104,6 +107,9 @@ class AnalysisJobs:
         job = self._jobs.get(job_id)
         if job is None:
             raise ValueError("unknown or expired analysis job")
+        if job["state"] not in ("queued", "running") and time.monotonic() - job["created"] > 1800:
+            del self._jobs[job_id]
+            raise ValueError("analysis job expired")
         self.grants._entry(job["file_id"])  # recheck revocation/expiry on every access
         return job
 

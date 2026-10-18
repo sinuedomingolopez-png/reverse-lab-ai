@@ -8,6 +8,7 @@ import importlib.util
 import json
 import os
 import socket
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -23,12 +24,12 @@ from reverse_lab.ghidra_probe import build_synthetic_elf
 class WireTests(unittest.IsolatedAsyncioTestCase):
     async def _analyze(self, client, file_id, engine="basic"):
         listing = await client.list_tools()
-        self.assertEqual(len(listing.tools), 13)
+        self.assertEqual(len(listing.tools), 14)
         started = await client.call_tool("analyze_file", {"file_id": file_id, "engine": engine})
         self.assertFalse(started.is_error, str(started))
         self.assertIn("data", started.structured_content, str(started))
         job_id = started.structured_content["data"]["id"]
-        for _ in range(200):
+        for _ in range(3600):
             status = await client.call_tool("get_analysis_status", {"job_id": job_id})
             if status.structured_content["data"]["state"] not in ("running", "queued"):
                 break
@@ -51,7 +52,8 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
             params = StdioServerParameters(command=sys.executable,
                 args=["-m", "reverse_lab.agent", "--manifest", str(manifest), "serve"],
                 cwd=Path(__file__).resolve().parents[1],
-                env={"TEMP": os.environ.get("TEMP", directory), "TMP": os.environ.get("TMP", directory)})
+                env={key: value for key, value in os.environ.items()
+                     if key in ("TEMP", "TMP", "JAVA_HOME", "GHIDRA_HOME", "APPDATA", "LOCALAPPDATA", "PATH")})
             async with Client(params, mode="legacy") as client:
                 job_id = await self._analyze(client, item["id"])
                 comparison = await client.call_tool("compare_reports", {"left_job_id": job_id, "right_job_id": job_id})
@@ -62,6 +64,16 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
                     lief_job = await self._analyze(client, item["id"], "lief")
                     sections = await client.call_tool("get_analysis_report", {"job_id": lief_job, "section": "sections"})
                     self.assertIn(".text", str(sections.structured_content))
+                if shutil.which("rizin"):
+                    await self._analyze(client, item["id"], "rizin")
+                if os.environ.get("GHIDRA_HOME"):
+                    ghidra_job = await self._analyze(client, item["id"], "ghidra")
+                    functions = await client.call_tool("list_functions", {"job_id": ghidra_job})
+                    entry = functions.structured_content["data"]["items"][0]["entry"]
+                    code = await client.call_tool("get_pseudocode", {"job_id": ghidra_job, "entry": entry})
+                    self.assertTrue(code.structured_content["data"]["available"])
+                if importlib.util.find_spec("angr"):
+                    await self._analyze(client, item["id"], "angr")
 
     async def test_http_authentication_discovery_scopes_and_analysis(self):
         import httpx2

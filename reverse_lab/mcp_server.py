@@ -159,6 +159,13 @@ def create_server(jobs: AnalysisJobs, *, remote: bool = False, **auth_options):
         return {"available": "call_graph" in analysis,
                 **page(analysis.get("call_graph", []), offset, limit)}
 
+    @expose("get_control_flow_graph", "Page actual angr CFGFast basic blocks or edges; output may be truncated.")
+    def control_flow(job_id: Identifier, table: Literal["nodes", "edges"] = "nodes",
+                     offset: Offset = 0, limit: Limit = 20) -> dict[str, Any]:
+        graph = content(job_id).get("analysis", {}).get("cfg_graph")
+        return {"available": graph is not None,
+                **page(graph.get(table, []) if graph else [], offset, limit)}
+
     @expose("compare_reports", "Compare completed jobs using verified metadata and optionally authorized functions.")
     def compare_reports(left_job_id: Identifier, right_job_id: Identifier) -> dict[str, Any]:
         left, right = jobs.report(left_job_id), jobs.report(right_job_id)

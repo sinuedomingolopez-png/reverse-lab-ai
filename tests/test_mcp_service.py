@@ -24,7 +24,7 @@ class MCPServiceTests(unittest.IsolatedAsyncioTestCase):
                 async with Client(create_server(jobs)) as client:
                     tools = await client.list_tools()
                     names = {tool.name for tool in tools.tools}
-                    self.assertEqual(len(names), 13)
+                    self.assertEqual(len(names), 14)
                     self.assertIn("analyze_file", names)
                     start = await client.call_tool("analyze_file", {"file_id": item["id"]})
                     job_id = start.structured_content["data"]["id"]

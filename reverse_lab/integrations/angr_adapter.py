@@ -36,6 +36,18 @@ def _check_report(report: object, *, max_functions: int) -> dict:
         raise RuntimeError("angr worker returned malformed function entries")
     if type(report.get("truncated")) is not bool:
         raise RuntimeError("angr worker returned invalid truncation flag")
+    graph = report.get("cfg_graph")
+    if graph is not None:
+        if (not isinstance(graph, dict) or not isinstance(graph.get("nodes"), list)
+                or not isinstance(graph.get("edges"), list) or len(graph["nodes"]) > 500
+                or len(graph["edges"]) > 1000):
+            raise RuntimeError("angr worker returned invalid CFG graph")
+        if not all(isinstance(n, dict) and isinstance(n.get("entry"), str)
+                   and len(n["entry"]) <= 128 for n in graph["nodes"]):
+            raise RuntimeError("angr worker returned invalid CFG node")
+        if not all(isinstance(e, dict) and all(isinstance(e.get(k), str) and len(e[k]) <= 128
+                                             for k in ("source", "target")) for e in graph["edges"]):
+            raise RuntimeError("angr worker returned invalid CFG edge")
     return report
 
 

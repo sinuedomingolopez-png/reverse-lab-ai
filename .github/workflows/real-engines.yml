@@ -39,6 +39,8 @@ jobs:
           python-version: '3.11'
       - name: Install actual LIEF distribution
         run: python -m pip install --only-binary=:all: lief
+      - name: Verify actual installed LIEF version
+        run: python -m pip show lief
       - name: Parse synthetic ELF through actual project workflow
         run: python -m reverse_lab.engine_probe --engine lief --output lief-smoke.json
       - name: Publish sanitized LIEF check
@@ -64,6 +66,8 @@ jobs:
           python-version: '3.11'
       - name: Install actual angr distribution
         run: python -m pip install angr
+      - name: Verify actual installed angr version
+        run: python -m pip show angr
       - name: Analyze synthetic ELF with authentic CFGFast worker
         run: python -m reverse_lab.engine_probe --engine angr --timeout 120 --output angr-smoke.json
       - name: Publish sanitized angr check

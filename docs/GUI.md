@@ -16,6 +16,12 @@ reverse-lab-gui
 
 En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-reverse-lab.bat**. La interfaz no envía archivos a internet, no levanta un servidor y no necesita cuenta de pago.
 
+## Explorador de funciones
+
+En la pestaña **Funciones**, pulsa **Explorar funciones**, o haz doble clic sobre una función para abrir su ficha. Podrás buscar por nombre/dirección, navegar entre funciones relacionadas, consultar pseudocódigo y regresar con **Anterior**. En **Mapa de llamadas**, un doble clic abre la función destino.
+
+**Abrir informe JSON** permite explorar un análisis guardado sin repetirlo. Consulta [FUNCTION_EXPLORER.md](FUNCTION_EXPLORER.md).
+
 ## Comparación e interpretación
 
 Desde la ventana principal, pulsa **Comparar JSON** para elegir dos informes guardados. Pulsa **Explicar** para generar un resumen factual sin IA. Desde ese resumen puedes elegir **Explicar mediante IA local (Ollama)**; se solicitará confirmación y el modelo debe estar instalado en tu ordenador. Consulta [COMPARE.md](COMPARE.md) y [AI_LOCAL.md](AI_LOCAL.md).

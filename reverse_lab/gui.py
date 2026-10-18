@@ -10,7 +10,8 @@ from collections.abc import Mapping
 
 from .workflow import analyze, BACKENDS
 from .call_graph import extract_call_edges, outgoing_calls, build_dot
-from . import report_gui
+from . import report_gui, function_explorer_gui
+from .reports import load_report
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -161,12 +162,21 @@ def main() -> None:
             self.summary.pack(fill="both", expand=True)
             self.summary.insert("1.0", "Selecciona un archivo para comenzar.\n\nLos análisis no salen de tu ordenador.")
             self.summary.configure(state="disabled")
+            function_header = ttk.Frame(functions_page, style="Panel.TFrame")
+            function_header.pack(fill="x", pady=(0, 8))
+            ttk.Label(function_header, text="Selecciona una función o abre el explorador unificado.",
+                      style="Panel.TLabel").pack(side="left")
+            ttk.Button(function_header, text="Explorar funciones",
+                       command=self.open_function_explorer).pack(side="right")
+            ttk.Button(function_header, text="Abrir informe JSON",
+                       command=self.open_saved_function_report).pack(side="right", padx=(0, 8))
             self.functions = ttk.Treeview(functions_page, columns=("name", "entry"), show="headings")
             self.functions.heading("name", text="FUNCIÓN")
             self.functions.heading("entry", text="DIRECCIÓN DE ENTRADA")
             self.functions.column("name", width=530)
             self.functions.column("entry", width=270)
             self.functions.pack(fill="both", expand=True)
+            self.functions.bind("<Double-1>", self.open_function_from_list)
             self.pseudocode_view = scrolledtext.ScrolledText(
                 pseudocode_page, bg=FIELD, fg=TEXT, insertbackground=TEXT,
                 wrap="none", relief="flat", font=("Consolas", 10), padx=14, pady=14)
@@ -188,6 +198,7 @@ def main() -> None:
             self.call_tree.column("entry", width=160)
             self.call_tree.pack(fill="both", expand=True)
             self.call_tree.bind("<<TreeviewSelect>>", self.show_selected_calls)
+            self.call_tree.bind("<Double-1>", self.open_function_from_call)
             self.call_canvas = tk.Canvas(call_graph_page, bg=FIELD, highlightthickness=0, height=215)
             self.call_canvas.pack(fill="x", pady=(10, 0))
             self.call_canvas.bind("<Configure>", self.show_selected_calls)
@@ -390,6 +401,45 @@ def main() -> None:
                 messagebox.showerror("Error al exportar mapa", str(exc))
                 return
             self.status_var.set("Mapa DOT guardado en " + path)
+
+        def open_saved_function_report(self):
+            path = filedialog.askopenfilename(title="Abrir informe Reverse Lab AI",
+                                               filetypes=[("Archivo JSON", "*.json")])
+            if not path:
+                return
+            try:
+                report = load_report(path)
+            except (ValueError, OSError) as exc:
+                messagebox.showerror("Informe inválido", str(exc))
+                return
+            self.report = report
+            self.save_button.configure(state="normal")
+            self.display(report)
+            self.status_var.set("Informe local cargado · " + report["filename"])
+            self.open_function_explorer()
+
+        def open_function_explorer(self, initial_entry=None):
+            function_explorer_gui.open_function_explorer(
+                self.root, self.report, initial_entry=initial_entry
+            )
+
+        def open_function_from_list(self, _event=None):
+            selected = self.functions.selection()
+            if not selected:
+                return
+            values = self.functions.item(selected[0], "values")
+            if len(values) >= 2:
+                self.open_function_explorer(initial_entry=values[1])
+
+        def open_function_from_call(self, _event=None):
+            selected = self.call_tree.selection()
+            if not selected:
+                return
+            try:
+                edge = self.call_edges[int(selected[0])]
+            except (ValueError, IndexError):
+                return
+            self.open_function_explorer(initial_entry=edge["callee"]["entry"])
 
         def save_report(self):
             if self.report is None:

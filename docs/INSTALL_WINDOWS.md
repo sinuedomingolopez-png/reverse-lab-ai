@@ -23,6 +23,10 @@ Desde PowerShell:
 
 O haz doble clic en `start-reverse-lab.bat`, que utilizará el Python del entorno `.venv` cuando exista. Sin dependencias adicionales para el modo básico. Consulta [la guía de la interfaz](GUI.md).
 
+### Explorar informes guardados
+
+En la ventana, abre **Funciones → Abrir informe JSON** para cargar un resultado previamente generado, y pulsa **Explorar funciones**. También puedes hacer doble clic en una función o una relación para abrir su ficha; consulta [la guía del explorador](FUNCTION_EXPLORER.md).
+
 ## Analizador básico (sin dependencias de terceros)
 
 ```powershell

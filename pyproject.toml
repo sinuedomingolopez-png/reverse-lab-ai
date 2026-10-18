@@ -4,9 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reverse-lab-ai"
-version = "0.7.0"
+version = "0.8.0"
 description = "Local static binary inspection and reverse engineering integration lab"
 requires-python = ">=3.10"
+
+[project.optional-dependencies]
+angr = ["angr"]
 
 [tool.setuptools.packages.find]
 include = ["reverse_lab*"]

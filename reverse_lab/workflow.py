@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .analyzer import inspect_file
 
-BACKENDS = ("basic", "lief", "rizin", "ghidra")
+BACKENDS = ("basic", "lief", "rizin", "ghidra", "angr")
 
 
 def analyze(
@@ -42,6 +42,9 @@ def analyze(
         report["analysis"] = inspect_with_rizin(
             path, executable=rizin_executable, timeout=timeout
         )
+    elif backend == "angr":
+        from .integrations.angr_adapter import inspect_with_angr
+        report["analysis"] = inspect_with_angr(path, timeout=timeout)
     elif backend == "ghidra":
         from .integrations.ghidra_adapter import analyze_with_ghidra
         ghidra_options = {"timeout": timeout, "export_functions": export_functions}

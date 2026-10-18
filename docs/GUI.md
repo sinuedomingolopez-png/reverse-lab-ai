@@ -16,6 +16,14 @@ reverse-lab-gui
 
 En Windows, si has clonado el proyecto, puedes hacer doble clic en **start-reverse-lab.bat**. La interfaz no envía archivos a internet, no levanta un servidor y no necesita cuenta de pago.
 
+## Cutter y angr
+
+- **Abrir archivo en Cutter** abre una aplicación gráfica externa, previa confirmación y solo si Cutter está instalado localmente.
+- En el selector **Motor**, `angr` permite ejecutar `CFGFast` en un proceso Python separado, recuperar nombres/direcciones de funciones y consultar sus estadísticas desde el resumen. El tiempo máximo del proceso es 600 segundos y el archivo no puede superar los 32 MiB.
+- Cutter no necesita una cuenta ni transfiere sus informes automáticamente a Reverse Lab AI; las dependencias siguen siendo opcionales. Para analizar archivos de origen desconocido utiliza una máquina virtual aislada.
+
+Consulta [CUTTER_ANGR.md](CUTTER_ANGR.md).
+
 ## Autoprueba de Ghidra
 
 Pulsa **Autoprueba Ghidra** junto al campo de ruta a `analyzeHeadless`. La ventana ofrece detección sin ejecución y una prueba completa que crea un ELF sintético, lanza tu instalación local de Ghidra y comprueba exportaciones JSON. No descarga Ghidra ni utiliza archivos personales. Consulta [GHIDRA_SELFTEST.md](GHIDRA_SELFTEST.md).

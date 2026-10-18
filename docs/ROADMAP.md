@@ -6,6 +6,8 @@
 - Adaptador LIEF opcional.
 - Adaptador Rizin opcional (`rz-bin -Ij`).
 - Adaptador Ghidra headless opcional, exportador de funciones, pseudocódigo C aproximado y mapa de llamadas estáticas con límites estrictos (experimental).
+- Integración opcional de Cutter como editor externo (confirmación de usuario).
+- Adaptador angr CFGFast con worker Python separado, análisis estático de funciones y control de tiempo/tamaño.
 - Diagnóstico local de motores, autoprueba opcional de Ghidra con una muestra ELF sintética y pruebas unitarias.
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Explorador de funciones con búsqueda, referencias de entrada/salida, pseudocódigo, navegación entre funciones y carga local de informes anteriores.
@@ -20,8 +22,8 @@
 - Añadir tests de integración condicionados por disponibilidad de ejecutables.
 
 ## Después
-- Conector Cutter como aplicación visual externa.
-- angr en un contenedor o máquina virtual para análisis simbólico controlado.
+- Verificar Cutter instalado en Windows y mejorar intercambio voluntario de datos con Reverse Lab AI.
+- Para ampliar angr a ejecución simbólica, añadir primero aislamiento más fuerte (contenedor/VM), límites de memoria y pruebas específicas; todavía no está implementado.
 - Mejorar la interfaz con comparación lado a lado de informes y un historial local. El mapa de llamadas ya tiene vista interactiva y exportación DOT.
 - Mejorar la explicación con IA: permitir revisión humana de fragmentos de pseudocódigo autorizados, manteniendo la privacidad.
 - Conexión con ChatGPT/Codex a través de permisos explícitos (no está implementada).

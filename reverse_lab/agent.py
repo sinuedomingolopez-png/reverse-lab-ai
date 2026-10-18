@@ -77,14 +77,26 @@ def main(argv=None):
             server.run()
         else:
             from mcp.server.transport_security import TransportSecuritySettings
+            from mcp.server.auth.routes import create_protected_resource_routes
+            import uvicorn
             host = urlsplit(args.resource_url).netloc
-            server.run(transport="streamable-http", host="127.0.0.1", port=args.port,
-                       json_response=True, stateless_http=True, max_request_body_size=16384,
+            app = server.streamable_http_app(
+                       host="127.0.0.1", json_response=True, stateless_http=True, max_request_body_size=16384,
                        transport_security=TransportSecuritySettings(
                            enable_dns_rebinding_protection=True,
                            allowed_hosts=[host, f"127.0.0.1:{args.port}"],
                            allowed_origins=[f"https://{host}"],
                        ))
+            # SDK defaults discovery to required_scopes. Advertise optional scopes
+            # as well, while allowing read-only tokens and enforcing each operation.
+            routes = create_protected_resource_routes(
+                AnyHttpUrl(args.resource_url), [AnyHttpUrl(args.issuer)],
+                scopes_supported=["reverse:read", "reverse:analyze", "reverse:content", "reverse:cancel"],
+                resource_name="Reverse Lab AI")
+            paths = {route.path for route in routes}
+            app.router.routes = [route for route in app.router.routes if route.path not in paths] + routes
+            uvicorn.run(app, host="127.0.0.1", port=args.port, access_log=False,
+                        log_level="warning", limit_concurrency=16, timeout_keep_alive=5)
     finally:
         jobs.close()
 

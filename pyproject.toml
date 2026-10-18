@@ -12,6 +12,7 @@ requires-python = ">=3.10"
 angr = ["angr"]
 lief = ["lief"]
 validation = ["lief", "angr"]
+mcp = ["mcp==2.3.0; python_version >= '3.11'", "psutil==7.2.2", "pywin32==312; sys_platform == 'win32'"]
 
 [tool.setuptools.packages.find]
 include = ["reverse_lab*"]
@@ -22,6 +23,7 @@ reverse-lab-compare = "reverse_lab.report_cli:main_compare"
 reverse-lab-explain = "reverse_lab.report_cli:main_explain"
 reverse-lab-ghidra-check = "reverse_lab.ghidra_probe:main"
 reverse-lab-engine-check = "reverse_lab.engine_probe:main"
+reverse-lab-agent = "reverse_lab.agent:main"
 
 [tool.setuptools.package-data]
 reverse_lab = ["ghidra_scripts/*.java"]

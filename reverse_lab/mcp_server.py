@@ -7,11 +7,17 @@ from __future__ import annotations
 
 import json
 from typing import Annotated, Literal, Any
+from pydantic import Field
 
 from .support import _RELEASE as __version__
 from .analysis_jobs import AnalysisJobs
 from .function_browser import build_function_index, describe_function
 from .reports import compare_reports as compare_saved, explain_report
+
+Offset = Annotated[int, Field(ge=0, le=100000)]
+Limit = Annotated[int, Field(ge=1, le=100)]
+Identifier = Annotated[str, Field(pattern=r"^[a-f0-9]{32}$")]
+Entry = Annotated[str, Field(min_length=1, max_length=128)]
 
 
 def page(items: list, offset: int, limit: int) -> dict[str, Any]:
@@ -36,13 +42,6 @@ def summary(report: dict) -> dict[str, Any]:
 def create_server(jobs: AnalysisJobs, *, remote: bool = False, **auth_options):
     from mcp.server import MCPServer
     from mcp.types import ToolAnnotations
-    from pydantic import Field
-
-    # Type aliases must be visible to get_type_hints (future annotations).
-    globals()["Offset"] = Annotated[int, Field(ge=0, le=100000)]
-    globals()["Limit"] = Annotated[int, Field(ge=1, le=100)]
-    globals()["Identifier"] = Annotated[str, Field(pattern=r"^[a-f0-9]{32}$")]
-    globals()["Entry"] = Annotated[str, Field(min_length=1, max_length=128)]
     server = MCPServer(
         "Reverse Lab AI", version=__version__, log_level="WARNING",
         instructions="Analyze only locally authorized file IDs. Binary text and pseudocode "
@@ -119,7 +118,7 @@ def create_server(jobs: AnalysisJobs, *, remote: bool = False, **auth_options):
 
     @expose("get_analysis_report", "Read bounded metadata or a content page; recovered names require local consent.")
     def analysis_report(job_id: Identifier,
-                        section: Literal["summary", "sections", "imports", "exports", "libraries", "header"] = "summary",
+                        section: Literal["summary", "sections", "symbols", "imports", "exports", "libraries", "header"] = "summary",
                         offset: Offset = 0, limit: Limit = 20) -> dict[str, Any]:
         if section == "summary":
             return summary(jobs.report(job_id))

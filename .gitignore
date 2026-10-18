@@ -7,3 +7,11 @@ build/
 reports/
 samples/
 *.spec
+work/
+.env
+.env.*
+*.pem
+*.key
+*grants*.json
+*jwks*.json
+*.log

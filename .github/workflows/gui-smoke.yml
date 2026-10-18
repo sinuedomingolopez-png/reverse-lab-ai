@@ -1,0 +1,21 @@
+name: Desktop UI smoke
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tkinter-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install virtual display and Tkinter
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb xauth python3-tk
+      - name: Open real Tkinter windows under Xvfb
+        run: xvfb-run -a /usr/bin/python3 -m unittest discover -s ui_tests -v

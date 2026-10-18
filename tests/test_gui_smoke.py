@@ -24,7 +24,8 @@ class DesktopSmokeTests(unittest.TestCase):
             "window_created": True,
             "window_title": FakeRoot().title(),
             "controls": ["Analizar archivo", "Historial local",
-                         "Guardar en historial", "Autoprueba Ghidra"],
+                         "Guardar en historial", "Autoprueba Ghidra",
+                         "Guardar diagnóstico"],
             "backend_angr": True,
         }):
             result = run_desktop_smoke()

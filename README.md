@@ -2,7 +2,7 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
-## Interfaz visual local (0.3.0)
+## Interfaz visual local (0.4.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
 
@@ -20,7 +20,7 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 - Tamaño de archivo, SHA-256 e informes JSON.
 - Adaptador LIEF para metadatos del binario (requiere instalar LIEF).
 - Adaptador Rizin con `rz-bin -Ij` para metadatos JSON (requiere Rizin).
-- Adaptador Ghidra headless (requiere Ghidra) y exportador experimental de nombres y direcciones de funciones.
+- Adaptador Ghidra headless (requiere Ghidra), exportador experimental de nombres y direcciones y exportación **opcional** de pseudocódigo C aproximado (máximo 20 funciones de 8000 caracteres por defecto).
 - Diagnóstico local de LIEF, Ghidra, Rizin, Cutter y angr (sin instalarlos).
 - Motor de análisis compartido por CLI e interfaz visual local con trabajos en segundo plano.
 - Pruebas unitarias sin motores externos y workflow CI.
@@ -79,11 +79,11 @@ Instala Ghidra desde https://github.com/NationalSecurityAgency/ghidra/releases.
 ```bash
 python -m reverse_lab.cli programa.exe --backend ghidra \
   --ghidra-headless /ruta/a/ghidra/support/analyzeHeadless \
-  --export-functions --output funciones.json
+  --export-functions --export-pseudocode --output analisis.json
 ```
 
-El flag `--export-functions` solicita exportación de funciones mediante un script Java de Ghidra.
-La compatibilidad del lanzador `.bat` de Windows y la exportación con una instalación real de Ghidra aún deben verificarse.
+El flag `--export-functions` solicita un listado de funciones. `--export-pseudocode` permite exportar pseudocódigo C aproximado con límites estrictos, solo cuando se solicita. En la interfaz hay una nueva pestaña «Pseudocódigo».
+El lanzamiento `.bat` de Windows incorpora protecciones contra caracteres de shell peligrosos y pruebas simuladas; sigue pendiente una ejecución real en Windows. Tampoco se ha validado aún el script Java con una instalación real de Ghidra.
 
 Más información: [instalación en Windows](docs/INSTALL_WINDOWS.md), [Rizin](docs/RIZIN.md), [Ghidra](docs/GHIDRA.md) y [plan de trabajo](docs/ROADMAP.md).
 

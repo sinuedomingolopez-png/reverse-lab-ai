@@ -5,7 +5,7 @@
 - CLI con selección de motor: básico, LIEF, Rizin y Ghidra.
 - Adaptador LIEF opcional.
 - Adaptador Rizin opcional (`rz-bin -Ij`).
-- Adaptador Ghidra headless opcional y exportador de funciones (experimental).
+- Adaptador Ghidra headless opcional, exportador de funciones y pseudocódigo C aproximado con límites estrictos (experimental).
 - Diagnóstico local de motores y pruebas unitarias.
 - Interfaz gráfica de escritorio (Tkinter) para elegir archivos, motores, ver resultados y guardar JSON.
 - Lanzador Windows y paquete Python con comando gráfico `reverse-lab-gui`.
@@ -15,7 +15,7 @@
 ## Siguiente fase: validación en herramientas reales
 - Ejecutar análisis de un binario sintético con Rizin y LIEF instalados.
 - Validar Ghidra headless y la compilación de ExportFunctions.java con versiones actuales.
-- Verificar especialmente invocación `.bat` y rutas con espacios en Windows.
+- Validar Ghidra real en Windows con rutas con espacios; la invocación `.bat` cuenta por ahora con pruebas simuladas y rechazo de caracteres de shell peligrosos.
 - Añadir tests de integración condicionados por disponibilidad de ejecutables.
 
 ## Después

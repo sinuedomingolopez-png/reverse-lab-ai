@@ -23,12 +23,14 @@ Desde la ventana principal, pulsa **Comparar JSON** para elegir dos informes gua
 ## Uso
 
 1. Pulsa **Examinar** y selecciona un archivo que tengas permiso para analizar.
-2. Elige **basic**, **lief**, **rizin** o **ghidra**.
+2. Elige **basic**, **lief**, **rizin** o **ghidra**. Si eliges Ghidra, puedes marcar **Pseudocódigo (experimental)** para solicitar un fragmento acotado de pseudocódigo C aproximado.
 3. Para Rizin, configura la ruta a `rz-bin`; para Ghidra, configura la ruta al lanzador `analyzeHeadless`.
 4. Pulsa **Analizar archivo**. Los análisis se ejecutan en un hilo de trabajo para que la ventana no se bloquee.
-5. Consulta **Resumen**, **Funciones** o **JSON**, y guarda el informe JSON si lo necesitas.
+5. Consulta **Resumen**, **Funciones**, **Pseudocódigo** o **JSON**, y guarda el informe JSON si lo necesitas.
 
 **Importante:** las funciones solo aparecen si un análisis de Ghidra consigue exportarlas. La vista muestra como máximo 500 funciones; el JSON guardado conserva la lista completa. El JSON mostrado puede truncarse para evitar bloquear la interfaz, pero el archivo exportado no.
+
+La pestaña **Pseudocódigo** solo muestra resultados si has marcado la opción y el script de Ghidra se ha ejecutado correctamente. El contenido puede ser confidencial y no se envía a Ollama: el conector de IA local sigue recibiendo solo metadatos resumidos.
 
 ## Componentes opcionales
 

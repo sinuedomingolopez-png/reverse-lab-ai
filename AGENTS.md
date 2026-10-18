@@ -8,3 +8,10 @@
 - Ejecuta `python -m unittest discover -s tests -v` y conserva tests reproducibles de tipos, cabeceras, hashes, tamaño y errores.
 - Registra límites, resultados de prueba y amenazas pendientes. Los informes deben diferenciar observaciones de hipótesis.
 - Prepara PRs antes de cambiar el comportamiento; no realices despliegues no solicitados.
+
+## Windows portable
+
+- La compilación para usuarios se crea en Windows con PyInstaller y se publica como artifact temporal de GitHub Actions.
+- Nunca afirmes que está firmada digitalmente. Conserva comprobación SHA-256 y arranque `--self-test-output` sin ejecutar muestras.
+- No incluyas motores Ghidra/Rizin/Cutter/LIEF/angr ni muestras privadas en el ZIP base. En modo frozen, angr requiere Python real externo configurado mediante `REVERSE_LAB_PYTHON`.
+- Las compilaciones sin firma pueden activar SmartScreen: no recomiendes desactivar protecciones del sistema.

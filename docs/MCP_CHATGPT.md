@@ -48,7 +48,14 @@ Guarda el manifiesto con los permisos privados de tu usuario, fuera del reposito
 y de las raíces de muestras. No es cifrado ni una frontera frente a procesos maliciosos
 que ya se ejecutan con tus propios permisos locales.
 
-## Arquitectura para ChatGPT
+## Conexión privada validada con ChatGPT
+
+La ruta recomendada es ahora [Secure MCP Tunnel](CHATGPT_TUNNEL.md), con agente stdio
+y autenticación del transporte en OpenAI. El recorrido real desde ChatGPT con Ghidra
+fue comprobado el 19-10-2026. No exige publicar HTTP ni configurar otro proveedor OAuth.
+La arquitectura siguiente sigue siendo la alternativa para un endpoint HTTP público.
+
+## Arquitectura HTTP pública con OAuth
 
 ```text
 ChatGPT → HTTPS público dedicado → túnel saliente autenticado por su proveedor

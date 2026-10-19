@@ -40,3 +40,10 @@ Emparejamiento guiado y aprovisionamiento automático de OAuth/túnel; integraci
 ## Privacidad y límites
 
 El análisis permanece local. Los resultados que un cliente remoto solicite sí atraviesan el túnel y llegan a ese cliente con el consentimiento concedido. El proveedor del túnel que termina TLS puede observarlos. El binario no se expone como recurso MCP. No autorices contenido confidencial sin aceptar ese flujo. Los límites de procesos no equivalen a un entorno de seguridad completo. Las autorizaciones locales no protegen frente a otro proceso malicioso con los mismos permisos de usuario.
+
+
+## Ampliación: cuenta real de ChatGPT, 19-10-2026
+
+Secure MCP Tunnel oficial 0.0.16 quedó asociado al espacio de ChatGPT, con clave restringida a Tunnels Read/Use, cifrada localmente con Windows DPAPI y caducidad de 30 días. ChatGPT invocó estado, motores, archivos autorizados, análisis Ghidra, estado/informe, funciones, pseudocódigo y llamadas. Resultado: ELF sintético de 4336 bytes, SHA-256 9b29456fb2f83c86f1dbee588e53533617c5f05f9823f934043720270e3e89c2, dos funciones, dos pseudocódigos y una llamada; la función auxiliar devuelve 42. El túnel entregó 15 respuestas sin fallos en esa comprobación. No se ejecutó ni subió el binario.
+
+Esta evidencia actualiza la conexión privada con ChatGPT de pendiente a probada en la instalación de validación. El login OAuth con un proveedor externo para la ruta HTTP pública sigue sin validarse y no se necesita para esta ruta stdio privada. Otras cuentas necesitan su propia asociación y autorización. Véase [guía del túnel privado](CHATGPT_TUNNEL.md).

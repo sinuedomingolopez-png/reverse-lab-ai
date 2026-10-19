@@ -11,8 +11,9 @@ Los permisos se conceden en el ordenador por archivo y SHA-256, caducan y pueden
 Compartir símbolos o pseudocódigo exige un permiso local separado.
 
 Hay transportes **stdio** y **HTTP con OAuth**, comprobados con el cliente oficial y motores reales
-sobre muestras sintéticas. **Tu cuenta de ChatGPT todavía no está conectada**: faltan configurar el
-proveedor OAuth y HTTPS/túnel, registrar el MCP y probarlo desde tu cuenta. No se envían binarios
+sobre muestras sintéticas. También se ha completado una **prueba real desde ChatGPT mediante
+Secure MCP Tunnel privado**: Ghidra recuperó funciones, pseudocódigo y llamadas. Consulta la
+[guía del túnel](docs/CHATGPT_TUNNEL.md) para configurar otras instalaciones. No se envían binarios
 a terceros ni se inicia un servicio público automáticamente.
 
 El panel **Agente MCP** administra permisos y el arranque/parada local. El extra `desktop` añade

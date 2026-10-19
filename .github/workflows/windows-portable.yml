@@ -25,7 +25,7 @@ jobs:
           python-version: '3.11'
           architecture: 'x64'
       - name: Install portable build tools
-        run: python -m pip install "pyinstaller>=6.15,<7"
+        run: python -m pip install "pyinstaller==6.22.3" "tkinterdnd2==0.6.4"
       - name: Check application tests
         run: python -m unittest discover -s tests -v
       - name: Build EXE, run offline smoke-test and create ZIP
@@ -33,7 +33,7 @@ jobs:
       - name: Verify checksum and required smoke-test output
         shell: pwsh
         run: |
-          $archive = 'dist/ReverseLabAI-0.12.0-windows-x64.zip'
+          $archive = 'dist/ReverseLabAI-0.13.0-windows-x64.zip'
           $expected = (Get-Content "$archive.sha256" -Raw).Split(' ')[0]
           $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $expected) { throw 'Portable ZIP checksum mismatch' }
@@ -58,10 +58,10 @@ jobs:
       - name: Upload unsigned Windows portable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: ReverseLabAI-0.12.0-windows-x64
+          name: ReverseLabAI-0.13.0-windows-x64
           path: |
-            dist/ReverseLabAI-0.12.0-windows-x64.zip
-            dist/ReverseLabAI-0.12.0-windows-x64.zip.sha256
+            dist/ReverseLabAI-0.13.0-windows-x64.zip
+            dist/ReverseLabAI-0.13.0-windows-x64.zip.sha256
             dist/portable-smoke.json
             dist/gui-smoke.json
             dist/support-smoke.json

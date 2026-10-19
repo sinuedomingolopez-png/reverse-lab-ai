@@ -33,3 +33,69 @@ def inspect_with_rizin(
     if not isinstance(metadata, dict):
         raise RuntimeError("rz-bin JSON must be an object")
     return {"backend": "rizin", "recognized": bool(metadata), "metadata": metadata}
+
+
+def inspect_functions_with_rizin(target: str | Path, *, executable: str = "rizin",
+                                  timeout: int = 60) -> dict:
+    """Run static discovery with fixed commands, never debug or execute the input.
+
+    The MCP job supervisor bounds the process tree, memory and output files.
+    Direct CLI calls retain subprocess timeout, as with the original adapter.
+    """
+    if type(timeout) is not int or not 1 <= timeout <= 600:
+        raise ValueError("timeout must be 1..600 seconds")
+    path = Path(target).resolve(strict=True)
+    if not path.is_file():
+        raise ValueError("target must be a regular file")
+    try:
+        result = subprocess.run(
+            [executable, "-2", "-q", "-c", "aaa;aflj", str(path)],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=timeout, shell=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError("rizin static function discovery unavailable or timed out") from exc
+    if result.returncode != 0 or len(result.stdout) > 2 * 1024 * 1024:
+        raise RuntimeError("rizin function discovery failed or exceeded output limit")
+    try:
+        entries = json.loads(result.stdout)
+    except ValueError as exc:
+        raise RuntimeError("rizin did not return function JSON") from exc
+    if not isinstance(entries, list):
+        raise RuntimeError("rizin function JSON must be a list")
+    functions = []
+    for item in entries[:500]:
+        if not isinstance(item, dict) or type(item.get("offset")) is not int:
+            raise RuntimeError("invalid rizin function entry")
+        functions.append({"name": str(item.get("name", "unnamed"))[:180],
+                          "entry": hex(item["offset"])})
+    return {"backend": "rizin", "analysis_type": "static", "functions": functions,
+            "function_count": len(entries), "truncated": len(entries) > 500}
+
+
+def inspect_tables_with_rizin(target: str | Path, *, executable: str = "rz-bin", timeout: int = 60) -> dict:
+    """Read fixed section/symbol tables. Intended for supervised static jobs."""
+    if type(timeout) is not int or not 1 <= timeout <= 600:
+        raise ValueError("timeout must be 1..600 seconds")
+    path = Path(target).resolve(strict=True)
+    if not path.is_file():
+        raise ValueError("target must be a regular file")
+    tables = {}
+    for flag, key in (("-Sj", "sections"), ("-sj", "symbols")):
+        try:
+            result = subprocess.run([executable, flag, str(path)], stdin=subprocess.DEVNULL,
+                                    capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                    timeout=timeout, shell=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise RuntimeError("rz-bin table extraction failed") from exc
+        if result.returncode != 0 or len(result.stdout) > 2 * 1024 * 1024:
+            raise RuntimeError("rz-bin table failed or exceeded limit")
+        try:
+            data = json.loads(result.stdout)
+            entries = data[key] if isinstance(data, dict) else data
+        except (ValueError, KeyError) as exc:
+            raise RuntimeError("invalid rz-bin table JSON") from exc
+        if not isinstance(entries, list) or not all(isinstance(x, dict) for x in entries[:500]):
+            raise RuntimeError("invalid rz-bin table entries")
+        tables[key] = entries[:500]
+    return tables

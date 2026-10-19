@@ -124,8 +124,11 @@ def ghidra_selftest(
             "functions": "function_count", "pseudocode": "pseudocode_count",
             "call_graph": "call_graph_count",
         }[key]
-        valid = (isinstance(entries, list) and
+        valid = (isinstance(entries, list) and len(entries) > 0 and
                  result.get(counter, len(entries)) == len(entries))
+        if key == "pseudocode" and isinstance(entries, list):
+            valid = valid and any(isinstance(item.get("pseudocode"), str)
+                                  and item["pseudocode"].strip() for item in entries)
         report["checks"][f"{key}_export_valid"] = bool(valid)
         if isinstance(entries, list):
             report["counts"][key] = len(entries)

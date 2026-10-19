@@ -36,6 +36,18 @@ def _check_report(report: object, *, max_functions: int) -> dict:
         raise RuntimeError("angr worker returned malformed function entries")
     if type(report.get("truncated")) is not bool:
         raise RuntimeError("angr worker returned invalid truncation flag")
+    graph = report.get("cfg_graph")
+    if graph is not None:
+        if (not isinstance(graph, dict) or not isinstance(graph.get("nodes"), list)
+                or not isinstance(graph.get("edges"), list) or len(graph["nodes"]) > 500
+                or len(graph["edges"]) > 1000):
+            raise RuntimeError("angr worker returned invalid CFG graph")
+        if not all(isinstance(n, dict) and isinstance(n.get("entry"), str)
+                   and len(n["entry"]) <= 128 for n in graph["nodes"]):
+            raise RuntimeError("angr worker returned invalid CFG node")
+        if not all(isinstance(e, dict) and all(isinstance(e.get(k), str) and len(e[k]) <= 128
+                                             for k in ("source", "target")) for e in graph["edges"]):
+            raise RuntimeError("angr worker returned invalid CFG edge")
     return report
 
 
@@ -48,6 +60,15 @@ def worker_command(target: str | Path, *, max_functions: int = 300) -> list[str]
     """
     path = str(target)
     if not getattr(sys, "frozen", False):
+        configured = os.environ.get("REVERSE_LAB_PYTHON", "").strip()
+        if configured:
+            interpreter = Path(configured).expanduser().resolve(strict=True)
+            if not interpreter.is_file():
+                raise RuntimeError("REVERSE_LAB_PYTHON must point to an installed Python")
+            # Direct worker source avoids depending on an editable project install
+            # in a separate Python 3.12+ environment used by current angr.
+            return [str(interpreter), str(Path(__file__).with_name("angr_worker.py").resolve()),
+                    "--input", path, "--max-functions", str(max_functions)]
         return [
             sys.executable, "-m", "reverse_lab.integrations.angr_worker",
             "--input", path, "--max-functions", str(max_functions),

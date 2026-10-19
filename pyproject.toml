@@ -4,14 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reverse-lab-ai"
-version = "0.12.0"
+version = "0.13.0"
 description = "Local static binary inspection and reverse engineering integration lab"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-angr = ["angr"]
-lief = ["lief"]
-validation = ["lief", "angr"]
+angr = ["angr==10.0.4.post1"]
+lief = ["lief==1.0.0"]
+validation = ["lief==1.0.0", "angr==10.0.4.post1"]
+mcp = ["mcp==2.3.0; python_version >= '3.11'", "psutil==7.2.2", "pywin32==312; sys_platform == 'win32'"]
+desktop = ["tkinterdnd2==0.6.4"]
 
 [tool.setuptools.packages.find]
 include = ["reverse_lab*"]
@@ -22,6 +24,7 @@ reverse-lab-compare = "reverse_lab.report_cli:main_compare"
 reverse-lab-explain = "reverse_lab.report_cli:main_explain"
 reverse-lab-ghidra-check = "reverse_lab.ghidra_probe:main"
 reverse-lab-engine-check = "reverse_lab.engine_probe:main"
+reverse-lab-agent = "reverse_lab.agent:main"
 
 [tool.setuptools.package-data]
 reverse_lab = ["ghidra_scripts/*.java"]

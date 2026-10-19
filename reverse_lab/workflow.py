@@ -42,6 +42,10 @@ def analyze(
         report["analysis"] = inspect_with_rizin(
             path, executable=rizin_executable, timeout=timeout
         )
+        if export_functions:
+            from .integrations.rizin_adapter import inspect_functions_with_rizin, inspect_tables_with_rizin
+            report["analysis"].update(inspect_functions_with_rizin(path, timeout=timeout))
+            report["analysis"].update(inspect_tables_with_rizin(path, executable=rizin_executable, timeout=timeout))
     elif backend == "angr":
         from .integrations.angr_adapter import inspect_with_angr
         report["analysis"] = inspect_with_angr(path, timeout=timeout)

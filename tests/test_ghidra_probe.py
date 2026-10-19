@@ -100,7 +100,7 @@ class SmokeTests(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertIn("Java script error", result["error"])
 
-    def test_empty_exports_report_a_warning(self):
+    def test_empty_exports_fail_instead_of_claiming_real_validation(self):
         with tempfile.TemporaryDirectory() as directory:
             launcher = Path(directory) / "analyzeHeadless"
             launcher.touch()
@@ -109,7 +109,7 @@ class SmokeTests(unittest.TestCase):
                            "success": True, "functions": [], "pseudocode": [], "call_graph": [],
                        }):
                 result = ghidra_selftest(launcher=launcher)
-        self.assertEqual(result["status"], "passed")
+        self.assertEqual(result["status"], "failed")
         self.assertTrue(result["warnings"])
 
     def test_inconsistent_counts_are_rejected(self):

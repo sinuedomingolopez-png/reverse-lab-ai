@@ -59,11 +59,14 @@ py -m reverse_lab.ghidra_probe
 - `passed`: se completó el proceso de Ghidra y se validaron los JSON.
 - `failed`: alguna fase falló. El resultado incluirá diagnóstico acotado.
 
-Las listas vacías generan advertencias porque la detección real depende de la configuración, versión y opciones de Ghidra; no se presentan como evidencia de llamadas o de comportamiento.
+En 0.13 las listas vacías producen fallo y advertencia: la muestra sintética tiene
+funciones y una llamada conocidas. También se exige pseudocódigo no vacío.
 
 ## Limitaciones y seguridad
 
-- La **CI estándar** sigue utilizando simuladores; **no instala ni ejecuta Ghidra real**. Esta prueba necesita que Ghidra esté instalado en el equipo donde se ejecute.
+- La CI estándar usa simuladores. El workflow **Real MCP protocol and permissions** añade
+  Ghidra/Rizin reales en Windows y un recorrido con cliente MCP. Las versiones y
+  resultados comprobados están en [validación 0.13](VALIDATION_0_13.md).
 - Que la prueba pase acredita la integración básica, no demuestra que el código reconstruido sea perfecto, ni que un programa analizado sea seguro.
 - Ghidra puede ejecutar código de sus propios scripts Java. Trabaja solo con herramientas oficiales y programas cuyo análisis esté autorizado.
 - El informe no envía binarios ni pseudocódigo a Ollama, ChatGPT o servicios externos. La carpeta temporal con la muestra y el proyecto de Ghidra se limpia al terminar.

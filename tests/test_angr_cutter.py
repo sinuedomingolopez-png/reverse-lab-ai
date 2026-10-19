@@ -55,6 +55,9 @@ class CutterIntegrationTests(unittest.TestCase):
 
 class AngrAdapterTests(unittest.TestCase):
     def setUp(self):
+        environment = patch.dict("os.environ", {"REVERSE_LAB_PYTHON": ""})
+        environment.start()
+        self.addCleanup(environment.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.target = Path(self.temp.name) / "sample with spaces.elf"
@@ -126,7 +129,8 @@ class AngrWorkerTests(unittest.TestCase):
             0x401000: SimpleNamespace(name="main", addr=0x401000),
             0x401010: SimpleNamespace(name="helper", addr=0x401010),
         }
-        graph = SimpleNamespace(nodes=lambda: [1, 2, 3], edges=lambda: [(1, 2)])
+        # Current authentic angr graph APIs return fresh generators.
+        graph = SimpleNamespace(nodes=lambda: iter([1, 2, 3]), edges=lambda: iter([(1, 2)]))
         cfg = SimpleNamespace(
             model=SimpleNamespace(graph=graph),
             kb=SimpleNamespace(functions=funcs),

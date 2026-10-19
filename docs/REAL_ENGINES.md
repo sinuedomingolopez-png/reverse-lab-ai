@@ -1,46 +1,35 @@
-# Pruebas de motores reales — Reverse Lab AI 0.12
+# Motores reales — Reverse Lab AI 0.13
 
-Hasta la versión 0.11, las pruebas automáticas usaban mayoritariamente motores simulados. Reverse Lab AI 0.12 añade una comprobación de integración que instala y **utiliza los motores auténticos** para analizar un ELF x86-64 diminuto generado por el propio laboratorio, sin ejecutarlo ni utilizar archivos personales.
+Las comprobaciones locales de Windows usan instalaciones auténticas y muestras sintéticas generadas por el proyecto. No ejecutan los programas analizados. Un resultado válido acredita estas muestras y versiones concretas, no cualquier binario.
 
-## LIEF (Windows y Linux)
+| Motor | Instalación probada | Evidencia local |
+|---|---|---|
+| LIEF | 1.0.0, Python 3.11 | ELF, PE y Mach-O reconocidos; PE con importación ExitProcess, biblioteca KERNEL32.dll y exportación synthetic_helper |
+| Rizin | 0.9.1, Windows x64 | Secciones, símbolos y dos funciones del ELF sintético mediante rz-bin y rizin |
+| Ghidra | 12.1.4, JDK Temurin 25.0.4.1+1 | Dos funciones, dos pseudocódigos no vacíos y una llamada; scripts Java ejecutados por headless; consulta mediante cliente MCP oficial |
+| angr | 10.0.4.post1, Python 3.12.14 | CFGFast en worker separado; tres funciones, cuatro nodos y tres aristas |
+| Cutter | 2.5.0, Windows x64 | Detección y apertura del proceso con el ELF sintético; navegación manual y sincronización bidireccional no verificadas |
 
-LIEF interpreta metadatos ELF, PE y Mach-O. La prueba de integración verifica que la versión realmente instalada reconoce nuestra muestra ELF y recupera su dirección de entrada exacta (`0x401000`). El informe muestra `passed`, `failed` o `missing`.
+## Instalar y comprobar
 
-Instalación opcional:
-
-```powershell
-py -m pip install lief
-py -m reverse_lab.engine_probe --engine lief --output lief-test.json
-```
-
-## angr (Linux en la CI)
-
-angr permite recuperar información de flujo de control mediante `CFGFast`. La prueba invoca **el mismo proceso worker real** que utiliza Reverse Lab AI para analizar archivos, y verifica que aparecen funciones y nodos del CFG. No realiza `CFGEmulated`, simulación de estados ni ejecución simbólica.
+La aplicación base admite Python 3.10+. MCP necesita 3.11+. angr actual necesita 3.12+, por lo que se recomienda Python 3.12 para un entorno conjunto:
 
 ```powershell
-py -m pip install angr
-py -m reverse_lab.engine_probe --engine angr --timeout 120 --output angr-test.json
+python -m pip install ".[mcp,desktop,validation]"
+python -m reverse_lab.engine_probe --engine lief --output lief-test.json
+python -m reverse_lab.engine_probe --engine angr --timeout 120 --output angr-test.json
+python -m reverse_lab.ghidra_probe
+python -m unittest discover -s integration_tests -v
 ```
 
-La instalación puede ser pesada. En el ZIP portable, angr sigue requiriendo un Python externo con angr instalado y la configuración de `REVERSE_LAB_PYTHON`. Esta prueba está disponible al usar la versión Python del proyecto.
+Ghidra y su JDK, Rizin y Cutter se instalan externamente. Configura GHIDRA_HOME, JAVA_HOME y PATH según las guías específicas. Para usar otro entorno de angr, define REVERSE_LAB_PYTHON con la ruta absoluta a su python.exe. Funciona desde la aplicación fuente y desde el portable. No habilita ejecución simbólica.
 
-## Desde la interfaz
+El ZIP base no incluye LIEF ni angr. Para LIEF abre la aplicación desde un Python que lo tenga instalado. El agente MCP también se ejecuta desde Python externo. La ausencia de motores opcionales no impide usar el análisis básico.
 
-Abre `python -m reverse_lab.gui` o `ReverseLabAI.exe`, pulsa **Probar LIEF/angr**, selecciona el motor y ejecuta la autoprueba. El laboratorio muestra comprobaciones de disponibilidad y resultados, sin guardar nada automáticamente.
+## CI y alcance
 
-**Advertencia para el ZIP portable:** LIEF no viene incluido; incluso si instalas LIEF en otro Python, el EXE base no puede importarlo automáticamente. Para utilizar LIEF debes abrir el proyecto mediante ese Python instalado. La aplicación portable puede seguir identificando el motor como ausente.
+Los workflows `Real analysis engines` y `Real MCP protocol and permissions` instalan motores reales, con trabajos separados de las pruebas con dobles. El segundo descarga Ghidra y Rizin oficiales con SHA-256 fijado y comprueba el recorrido MCP a Ghidra en Windows. Las pruebas condicionadas ausentes aparecen como omitidas; no deben interpretarse como integraciones superadas. Consulta la ejecución del commit concreto en GitHub Actions.
 
-## GitHub Actions: motores auténticos
+Los trabajos MCP tienen tiempo, tamaño, concurrencia y memoria limitados. En Windows utilizan Job Objects para el árbol de procesos. Estos controles no equivalen a una VM ni garantizan aislamiento de red o de vulnerabilidades de los motores. Las invocaciones directas fuera del agente conservan sus propios límites. Consulta [validación](VALIDATION_0_13.md) y [MCP](MCP_CHATGPT.md).
 
-El flujo principal `Tests` mantiene sus cuatro combinaciones estables de Windows/Linux y Python 3.10/3.13, usando principalmente dobles de prueba de los motores externos. Las comprobaciones con LIEF y angr **instalados de verdad** se encuentran en el flujo independiente `Real analysis engines`, disponible para ejecución manual en GitHub Actions (`workflow_dispatch`). **No están verificadas automáticamente en esta versión**: hasta disponer de una ejecución confirmada no se deben presentar como superadas.
-
-
-El nuevo flujo [Real analysis engines](https://github.com/sinuedomingolopez-png/reverse-lab-ai/actions/workflows/real-engines.yml) instala LIEF de PyPI en Windows y Linux, y angr de PyPI en Linux con Python 3.11. Ejecuta `reverse_lab.engine_probe` y publica informes JSON con los resultados técnicos. No utiliza binarios desconocidos, contraseñas ni datos personales.
-
-Un resultado `passed` confirma solo que la integración concreta pudo analizar correctamente esta muestra. **No garantiza seguridad ni precisión general** al procesar programas reales. LIEF interpreta archivos en el proceso Python y angr en un proceso hijo con límite de tiempo, pero ninguno ofrece aislamiento de seguridad equivalente a una VM.
-
-## Próximos pasos
-
-Siguen pendientes las integraciones reales de **Rizin, Cutter y Ghidra**, y la prueba del ZIP en un ordenador Windows físico con esas herramientas instaladas. La autoprueba de Ghidra existente se puede ejecutar localmente con `python -m reverse_lab.ghidra_probe`.
-
-Documentación oficial: [LIEF](https://lief.re/doc/latest/) y [angr CFGFast](https://api.angr.io/en/latest/analyses/cfg.html).
+Fuentes oficiales: [LIEF](https://lief.re/doc/latest/), [angr](https://docs.angr.io/), [Ghidra](https://github.com/NationalSecurityAgency/ghidra), [Rizin](https://github.com/rizinorg/rizin), [Cutter](https://github.com/rizinorg/cutter).

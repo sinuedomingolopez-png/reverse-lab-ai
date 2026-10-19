@@ -23,7 +23,11 @@ def check_environment() -> dict:
             "rizin": {"available": rizin is not None, "path": rizin},
             "ghidra": {"available": launcher is not None, "path": launcher, "hint": "Set GHIDRA_HOME or run python -m reverse_lab.ghidra_probe"},
             "cutter": {"available": cutter is not None, "path": cutter},
-            "angr": {"available": importlib.util.find_spec("angr") is not None, "install": "pip install angr", "hint": "CFGFast backend; parses files using an optional subprocess, not a security sandbox"},
+            "angr": {"available": importlib.util.find_spec("angr") is not None,
+                     "external_python_configured": bool(os.environ.get("REVERSE_LAB_PYTHON") and
+                                                        Path(os.environ["REVERSE_LAB_PYTHON"]).is_file()),
+                     "install": "Python 3.12+: pip install angr",
+                     "hint": "CFGFast subprocess; configured external Python needs a real engine check"},
         }
     }
 

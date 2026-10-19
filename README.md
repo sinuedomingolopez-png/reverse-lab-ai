@@ -2,6 +2,35 @@
 
 Laboratorio gratuito y extensible de ingeniería inversa local, con análisis estático y motores opcionales.
 
+## Agente MCP real (0.13.0)
+
+Reverse Lab AI incorpora 14 herramientas del SDK MCP oficial para analizar archivos autorizados,
+consultar trabajos, funciones, pseudocódigo, llamadas y CFG, comparar informes y obtener explicaciones
+basadas en evidencias. El procesamiento se realiza localmente en trabajadores con límites de recursos.
+Los permisos se conceden en el ordenador por archivo y SHA-256, caducan y pueden revocarse.
+Compartir símbolos o pseudocódigo exige un permiso local separado.
+
+Hay transportes **stdio** y **HTTP con OAuth**, comprobados con el cliente oficial y motores reales
+sobre muestras sintéticas. **Tu cuenta de ChatGPT todavía no está conectada**: faltan configurar el
+proveedor OAuth y HTTPS/túnel, registrar el MCP y probarlo desde tu cuenta. No se envían binarios
+a terceros ni se inicia un servicio público automáticamente.
+
+El panel **Agente MCP** administra permisos y el arranque/parada local. El extra `desktop` añade
+arrastrar y soltar archivos; angr exporta un CFG acotado que puede verse con **Ver CFG**.
+El portable sigue siendo una aplicación independiente; el agente utiliza un Python externo.
+
+```powershell
+python -m pip install ".[mcp,desktop]"
+python -m reverse_lab.gui
+```
+
+MCP requiere Python 3.11+. Para angr actual utiliza Python 3.12+ con `pip install ".[angr]"`;
+puede ser un entorno separado configurado en `REVERSE_LAB_PYTHON`. El núcleo conserva Python 3.10+.
+
+Consulta [instalación, OAuth, permisos y alta en ChatGPT](docs/MCP_CHATGPT.md),
+[auditoría de la versión inicial](docs/AUDIT_2026_10_19.md) y
+[evidencia y límites de la entrega](docs/VALIDATION_0_13.md).
+
 ## Interfaz visual local (0.12.0)
 
 La aplicación de escritorio permite elegir archivos y motores, consultar el resumen técnico y las funciones exportadas por Ghidra, guardar los informes JSON, **comparar dos informes** y generar una explicación sin IA. Opcionalmente puede pedir una explicación a Ollama en el propio ordenador, con confirmación explícita. No necesita navegador, cuenta, servidor ni pago.
@@ -12,7 +41,8 @@ python -m reverse_lab.gui
 
 En Windows puedes hacer doble clic en `start-reverse-lab.bat` desde la carpeta clonada. Si existe `.venv`, se utilizará su Python. Consulta la [guía de la interfaz gráfica](docs/GUI.md).
 
-La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Windows con herramientas reales instaladas.
+La ventana y el portable se han comprobado también en Windows durante el desarrollo de 0.13.
+El alcance y las pruebas reproducibles están registrados en la documentación de validación.
 
 ## Funciones implementadas
 
@@ -31,7 +61,11 @@ La ventana se ha abierto en un entorno de pruebas Linux; falta validarla en Wind
 
 ## Comprobación de motores auténticos (0.12)
 
-Se ha preparado un flujo de integración para comprobar **LIEF real** sobre Windows/Linux y **angr real** sobre Linux, analizando únicamente un ELF sintético que el programa genera y no ejecuta. **Estas pruebas con motores instalados aún no tienen una ejecución verificada**; se pueden lanzar manualmente desde GitHub Actions → Real analysis engines. La autoprueba distingue motor ausente, error y resultado válido. Permite detectar incompatibilidades que no aparecían al utilizar simuladores.
+El flujo de integración comprueba **LIEF real** sobre Windows/Linux y **angr real** sobre Linux,
+analizando un ELF sintético que el programa genera y no ejecuta. La versión 0.13 también valida
+LIEF con PE/Mach-O generados y Rizin/Ghidra auténticos en Windows. El workflow de motores tenía
+un error YAML en 0.12; se ha corregido y se valida la sintaxis de todos los workflows en CI.
+La autoprueba distingue motor ausente, error y resultado válido; los mocks no cuentan como validación real.
 
 ```bash
 python -m pip install lief
@@ -98,7 +132,9 @@ python -m reverse_lab.ghidra_probe --ghidra-headless /ruta/a/ghidra/support/anal
 
 En la interfaz, pulsa **Autoprueba Ghidra** junto a la ruta del lanzador, y elige **Solo detectar** o **Ejecutar autoprueba completa**. Se validan las exportaciones de funciones, pseudocódigo y llamadas. El diagnóstico distingue ausencia de herramienta, detección sin ejecución, éxito y fallo.
 
-**Importante:** Ghidra debe estar realmente instalado y tener un JDK compatible. Estas pruebas no se han ejecutado aún contra una instalación real de Ghidra desde este proyecto. Consulta la [guía detallada para Windows](docs/GHIDRA_SELFTEST.md).
+**Importante:** Ghidra debe estar instalado con un JDK compatible. En 0.13 se han obtenido
+dos funciones, dos fragmentos de pseudocódigo y una llamada con Ghidra real sobre el ELF sintético,
+incluido el recorrido desde un cliente MCP. Consulta la [guía detallada para Windows](docs/GHIDRA_SELFTEST.md).
 
 ## Comparación de informes y explicación local
 
@@ -160,7 +196,8 @@ python -m reverse_lab.cli programa.exe --backend ghidra \
 El flag `--export-call-graph` solicita un conjunto acotado de llamadas estáticas entre funciones, consultable en la nueva pestaña **Mapa de llamadas** y exportable a formato Graphviz DOT. Consulta [la guía del mapa de llamadas](docs/CALL_GRAPH.md).
 
 El flag `--export-functions` solicita un listado de funciones. `--export-pseudocode` permite exportar pseudocódigo C aproximado con límites estrictos, solo cuando se solicita. En la interfaz hay una nueva pestaña «Pseudocódigo».
-El lanzamiento `.bat` de Windows incorpora protecciones contra caracteres de shell peligrosos y pruebas simuladas; sigue pendiente una ejecución real en Windows. Tampoco se ha validado aún el script Java con una instalación real de Ghidra.
+El lanzamiento `.bat` conserva las protecciones contra caracteres de shell y los exportadores
+Java tienen ahora validación real en Windows, además de las pruebas de contrato simuladas.
 
 Más información: [instalación en Windows](docs/INSTALL_WINDOWS.md), [Rizin](docs/RIZIN.md), [Ghidra](docs/GHIDRA.md) y [plan de trabajo](docs/ROADMAP.md).
 
@@ -168,6 +205,6 @@ Más información: [instalación en Windows](docs/INSTALL_WINDOWS.md), [Rizin](d
 
 El proyecto **no incluye ni instala automáticamente** Ghidra, Rizin, Cutter, LIEF o angr. No descompila por sí mismo: delega el análisis avanzado a esos motores externos.
 
-Analiza solo muestras autorizadas. Los analizadores de binarios pueden tener vulnerabilidades; usa entornos aislados para archivos desconocidos. No subas binarios propietarios, credenciales ni muestras confidenciales a este repositorio **público**. Cutter se abre como aplicación externa; angr aporta `CFGFast` estático. No existe una integración de depuración o ejecución simbólica, ni una conexión remota con ChatGPT.
+Analiza solo muestras autorizadas. Los analizadores de binarios pueden tener vulnerabilidades; usa entornos aislados para archivos desconocidos. No subas binarios propietarios, credenciales ni muestras confidenciales a este repositorio **público**. Cutter se abre como aplicación externa; angr aporta `CFGFast` estático. No se expone depuración ni ejecución simbólica. El MCP HTTP requiere configuración OAuth/HTTPS y una prueba desde la cuenta de ChatGPT antes de poder declarar la conexión operativa.
 
 Los resultados JSON son datos no confiables: nunca ejecutes instrucciones o código extraído de una muestra sin revisarlo.

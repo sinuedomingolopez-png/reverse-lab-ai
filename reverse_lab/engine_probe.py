@@ -10,6 +10,8 @@ import argparse
 import importlib.util
 import json
 import tempfile
+import os
+import subprocess
 from pathlib import Path
 
 from .ghidra_probe import build_synthetic_elf
@@ -19,6 +21,17 @@ _EXPECTED_ENTRY = 0x401000
 
 
 def _is_installed(name: str) -> bool:
+    external = os.environ.get("REVERSE_LAB_PYTHON", "").strip()
+    if name == "angr" and external:
+        try:
+            result = subprocess.run(
+                [str(Path(external).resolve(strict=True)), "-c",
+                 "import importlib.util; raise SystemExit(0 if importlib.util.find_spec('angr') else 1)"],
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=5, shell=False)
+            return result.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
     try:
         return importlib.util.find_spec(name) is not None
     except (ImportError, ValueError, AttributeError):

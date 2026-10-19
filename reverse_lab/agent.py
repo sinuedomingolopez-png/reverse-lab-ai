@@ -35,6 +35,7 @@ def main(argv=None):
     serve.add_argument("--resource-url")
     serve.add_argument("--jwks", type=Path)
     serve.add_argument("--owner-subject")
+    serve.add_argument("--stop-file", type=Path, help="Private owner-only cooperative HTTP shutdown marker")
     args = parser.parse_args(argv)
     grants = Authorizations(args.manifest)
     if args.command == "authorize":
@@ -95,8 +96,25 @@ def main(argv=None):
                 resource_name="Reverse Lab AI")
             paths = {route.path for route in routes}
             app.router.routes = [route for route in app.router.routes if route.path not in paths] + routes
-            uvicorn.run(app, host="127.0.0.1", port=args.port, access_log=False,
-                        log_level="warning", limit_concurrency=16, timeout_keep_alive=5)
+            http_server = uvicorn.Server(uvicorn.Config(
+                app, host="127.0.0.1", port=args.port, access_log=False,
+                log_level="warning", limit_concurrency=16, timeout_keep_alive=5))
+            import threading
+            watcher_done = threading.Event()
+            def watch_shutdown():
+                while not watcher_done.wait(0.1):
+                    if args.stop_file is not None and args.stop_file.exists():
+                        http_server.should_exit = True
+                        return
+            watcher = threading.Thread(target=watch_shutdown, daemon=True)
+            if args.stop_file is not None:
+                watcher.start()
+            try:
+                http_server.run()
+            finally:
+                watcher_done.set()
+                if watcher.is_alive():
+                    watcher.join(timeout=1)
     finally:
         jobs.close()
 

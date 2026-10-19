@@ -35,6 +35,8 @@ def analyze_cfg(target: str | Path, *, max_functions: int = 300) -> dict:
         functions.append({"name": name, "entry": hex(entry)})
     functions.sort(key=lambda f: int(f["entry"], 16))
     graph = cfg.model.graph
+    node_count = sum(1 for _ in graph.nodes())
+    edge_count = sum(1 for _ in graph.edges())
     def address(node):
         value = getattr(node, "addr", node if isinstance(node, int) else None)
         return hex(value) if isinstance(value, int) else None
@@ -49,12 +51,12 @@ def analyze_cfg(target: str | Path, *, max_functions: int = 300) -> dict:
         "backend": "angr",
         "analysis_type": "CFGFast",
         "function_count": len(manager),
-        "cfg_nodes": len(graph.nodes()),
-        "cfg_edges": len(graph.edges()),
+        "cfg_nodes": node_count,
+        "cfg_edges": edge_count,
         "functions": functions,
         "truncated": len(manager) > max_functions,
         "cfg_graph": {"nodes": nodes, "edges": edges,
-                      "truncated": len(graph.nodes()) > len(nodes) or len(graph.edges()) > len(edges)},
+                      "truncated": node_count > len(nodes) or edge_count > len(edges)},
     }
 
 

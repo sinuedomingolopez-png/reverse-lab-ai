@@ -60,6 +60,15 @@ def worker_command(target: str | Path, *, max_functions: int = 300) -> list[str]
     """
     path = str(target)
     if not getattr(sys, "frozen", False):
+        configured = os.environ.get("REVERSE_LAB_PYTHON", "").strip()
+        if configured:
+            interpreter = Path(configured).expanduser().resolve(strict=True)
+            if not interpreter.is_file():
+                raise RuntimeError("REVERSE_LAB_PYTHON must point to an installed Python")
+            # Direct worker source avoids depending on an editable project install
+            # in a separate Python 3.12+ environment used by current angr.
+            return [str(interpreter), str(Path(__file__).with_name("angr_worker.py").resolve()),
+                    "--input", path, "--max-functions", str(max_functions)]
         return [
             sys.executable, "-m", "reverse_lab.integrations.angr_worker",
             "--input", path, "--max-functions", str(max_functions),

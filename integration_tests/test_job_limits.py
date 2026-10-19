@@ -14,6 +14,37 @@ from reverse_lab.authorizations import Authorizations
 
 @unittest.skipUnless(importlib.util.find_spec("psutil"), "MCP job extra")
 class LimitsTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "win32", "Windows Job Object hard memory limit")
+    def test_windows_job_denies_allocation_over_memory_cap(self):
+        from reverse_lab.analysis_jobs import _windows_job, _terminate
+        with tempfile.TemporaryDirectory() as directory:
+            result = Path(directory) / "memory-result"
+            script = f'''import sys
+from pathlib import Path
+sys.stdin.buffer.read(1)
+chunks = []
+blocked = False
+try:
+    for _ in range(32):
+        chunks.append(bytearray(16 * 1024 * 1024))
+except MemoryError:
+    blocked = True
+del chunks
+Path({str(result)!r}).write_text("blocked" if blocked else "unbounded")
+'''
+            process = subprocess.Popen([sys.executable, "-c", script], stdin=subprocess.PIPE,
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
+            handle = None
+            try:
+                handle = _windows_job(process, 256 * 1024 * 1024)
+                process.stdin.write(b"1")
+                process.stdin.close()
+                self.assertEqual(process.wait(timeout=10), 0)
+                self.assertEqual(result.read_text(), "blocked")
+            finally:
+                _terminate(process, handle)
+
     def test_cancel_and_timeout_terminate_real_worker_tree(self):
         import psutil
         for cancel in (True, False):

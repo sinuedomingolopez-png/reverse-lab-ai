@@ -25,6 +25,12 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
     async def _analyze(self, client, file_id, engine="basic"):
         listing = await client.list_tools()
         self.assertEqual(len(listing.tools), 14)
+        status = await client.call_tool("reverse_lab_status", {})
+        self.assertTrue(status.structured_content["data"]["local_processing"])
+        engines = await client.call_tool("list_analysis_engines", {})
+        self.assertIn("ghidra", engines.structured_content["data"])
+        authorized = await client.call_tool("list_authorized_files", {})
+        self.assertIn(file_id, [f["id"] for f in authorized.structured_content["data"]["items"]])
         started = await client.call_tool("analyze_file", {"file_id": file_id, "engine": engine})
         self.assertFalse(started.is_error, str(started))
         self.assertIn("data", started.structured_content, str(started))
@@ -38,6 +44,8 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
         report = await client.call_tool("get_analysis_report", {"job_id": job_id})
         self.assertEqual(report.structured_content["data"]["format"], "ELF")
         self.assertNotIn("stdout_tail", str(report))
+        explanation = await client.call_tool("explain_analysis", {"job_id": job_id})
+        self.assertEqual(explanation.structured_content["data"]["hypotheses"], [])
         return job_id
 
     async def test_stdio_real_client_and_optional_real_lief(self):
@@ -53,7 +61,7 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
                 args=["-m", "reverse_lab.agent", "--manifest", str(manifest), "serve"],
                 cwd=Path(__file__).resolve().parents[1],
                 env={key: value for key, value in os.environ.items()
-                     if key in ("TEMP", "TMP", "JAVA_HOME", "GHIDRA_HOME", "APPDATA", "LOCALAPPDATA", "PATH")})
+                     if key in ("TEMP", "TMP", "JAVA_HOME", "GHIDRA_HOME", "APPDATA", "LOCALAPPDATA", "PATH", "REVERSE_LAB_PYTHON")})
             async with Client(params, mode="legacy") as client:
                 job_id = await self._analyze(client, item["id"])
                 comparison = await client.call_tool("compare_reports", {"left_job_id": job_id, "right_job_id": job_id})
@@ -72,8 +80,20 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
                     entry = functions.structured_content["data"]["items"][0]["entry"]
                     code = await client.call_tool("get_pseudocode", {"job_id": ghidra_job, "entry": entry})
                     self.assertTrue(code.structured_content["data"]["available"])
-                if importlib.util.find_spec("angr"):
-                    await self._analyze(client, item["id"], "angr")
+                    details = await client.call_tool("inspect_function", {"job_id": ghidra_job, "entry": entry})
+                    self.assertTrue(details.structured_content["data"]["available"])
+                    calls = await client.call_tool("get_call_graph", {"job_id": ghidra_job})
+                    self.assertGreaterEqual(calls.structured_content["data"]["total"], 1)
+                    compared = await client.call_tool("compare_reports", {"left_job_id": ghidra_job,
+                                                     "right_job_id": ghidra_job, "include_functions": True})
+                    self.assertTrue(compared.structured_content["data"]["functions"]["comparable"])
+                if importlib.util.find_spec("angr") or os.environ.get("REVERSE_LAB_PYTHON"):
+                    angr_job = await self._analyze(client, item["id"], "angr")
+                    graph = await client.call_tool("get_control_flow_graph", {"job_id": angr_job})
+                    self.assertGreaterEqual(graph.structured_content["data"]["total"], 1)
+                pending = await client.call_tool("analyze_file", {"file_id": item["id"]})
+                cancelled = await client.call_tool("cancel_analysis", {"job_id": pending.structured_content["data"]["id"]})
+                self.assertFalse(cancelled.is_error)
 
     async def test_http_authentication_discovery_scopes_and_analysis(self):
         import httpx2
@@ -100,6 +120,8 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
             command = [sys.executable, "-m", "reverse_lab.agent", "--manifest", str(manifest),
                        "serve", "--transport", "http", "--port", str(port), "--issuer", issuer,
                        "--resource-url", resource, "--jwks", str(jwks), "--owner-subject", "owner"]
+            stop_file = root / "stop"
+            command += ["--stop-file", str(stop_file)]
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             try:
                 async with httpx2.AsyncClient(trust_env=False, timeout=5) as http:
@@ -123,14 +145,24 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
                     token = jwt.encode(claims, key, algorithm="RS256", headers={"kid": "ephemeral-test"})
                     http.headers["Authorization"] = "Bearer " + token
                     async with Client(streamable_http_client(url, http_client=http), mode="legacy") as client:
+                        advertised = await client.list_tools()
+                        analyze_tool = next(tool for tool in advertised.tools if tool.name == "analyze_file")
+                        self.assertIn("reverse:analyze", analyze_tool.meta["securitySchemes"][0]["scopes"])
                         job_id = await self._analyze(client, item["id"])
                         denied = await client.call_tool("cancel_analysis", {"job_id": job_id})
                         self.assertIn("error", denied.structured_content)
+                        self.assertTrue(denied.is_error)
+                        self.assertIn("insufficient_scope", denied.meta["mcp/www_authenticate"][0])
                         private = await client.call_tool("list_functions", {"job_id": job_id})
                         self.assertIn("error", private.structured_content)
                     jwks.write_text('{"keys": []}', encoding="utf-8")
                     revoked = await http.post(url, json={})
                     self.assertEqual(revoked.status_code, 401)
             finally:
-                process.terminate()
-                process.wait(timeout=10)
+                stop_file.write_text("stop", encoding="ascii")
+                try:
+                    self.assertEqual(process.wait(timeout=10), 0)
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                        process.wait(timeout=5)

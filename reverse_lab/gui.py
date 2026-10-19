@@ -15,6 +15,7 @@ from .reports import load_report
 from .integrations.cutter_adapter import launch_cutter
 from . import history_gui
 from . import engine_probe_gui
+from .support import _RELEASE
 
 
 def extract_function_rows(report: Mapping, *, limit: int = 500) -> list[tuple[str, str]]:
@@ -86,7 +87,9 @@ def main(*, run_loop: bool = True):
             style.configure("TLabel", background=BG, foreground=TEXT, font=("Segoe UI", 10))
             style.configure("Sub.TLabel", background=BG, foreground=MUTED)
             style.configure("Panel.TLabel", background=PANEL, foreground=MUTED)
-            style.configure("TButton", padding=(15, 9), font=("Segoe UI", 10))
+            style.configure("TButton", padding=(15, 9), font=("Segoe UI", 10), background=PANEL,
+                            foreground=TEXT, bordercolor=FIELD, lightcolor=PANEL, darkcolor=PANEL)
+            style.map("TButton", background=[("active", FIELD)], foreground=[("disabled", MUTED)])
             style.configure("Accent.TButton", background=ACCENT, foreground=BG)
             style.map("Accent.TButton", background=[("active", "#8df4e8")])
             style.configure("TEntry", fieldbackground=FIELD, foreground=TEXT, insertcolor=TEXT)
@@ -103,7 +106,7 @@ def main(*, run_loop: bool = True):
             container.pack(fill="both", expand=True)
             tk.Label(container, text="REVERSE / LAB AI", font=("Segoe UI", 22, "bold"),
                      bg=BG, fg=ACCENT).pack(anchor="w")
-            ttk.Label(container, text="Ingeniería inversa · laboratorio local · versión inicial",
+            ttk.Label(container, text=f"Ingeniería inversa · laboratorio local · {_RELEASE}",
                       style="Sub.TLabel").pack(anchor="w", pady=(0, 18))
 
             source = ttk.Frame(container)
@@ -166,6 +169,8 @@ def main(*, run_loop: bool = True):
                        command=self.save_to_local_history).pack(side="left", padx=(12, 6))
             ttk.Button(history_controls, text="Historial local",
                        command=self.open_local_history).pack(side="left")
+            ttk.Button(history_controls, text="Agente MCP",
+                       command=self.open_agent_panel).pack(side="left", padx=8)
             ttk.Button(history_controls, text="Guardar diagnóstico",
                        command=self.save_support_diagnostic).pack(side="right")
             ttk.Label(container, textvariable=self.status_var, style="Sub.TLabel").pack(anchor="w", pady=(1, 10))
@@ -186,7 +191,8 @@ def main(*, run_loop: bool = True):
             self.summary = scrolledtext.ScrolledText(summary_page, bg=FIELD, fg=TEXT, insertbackground=TEXT,
                       wrap="word", relief="flat", font=("Consolas", 11), padx=14, pady=14)
             self.summary.pack(fill="both", expand=True)
-            self.summary.insert("1.0", "Selecciona un archivo para comenzar.\n\nLos análisis no salen de tu ordenador.")
+            self.summary.insert("1.0", "Selecciona o arrastra un archivo para comenzar.\n\n"
+                                "El análisis se realiza localmente. Compartir resultados por MCP requiere autorización.")
             self.summary.configure(state="disabled")
             function_header = ttk.Frame(functions_page, style="Panel.TFrame")
             function_header.pack(fill="x", pady=(0, 8))
@@ -214,6 +220,8 @@ def main(*, run_loop: bool = True):
             self.dot_button = ttk.Button(call_header, text="Guardar .DOT", command=self.save_call_dot,
                                          state="disabled")
             self.dot_button.pack(side="right")
+            from .cfg_gui import open_cfg
+            ttk.Button(call_header, text="Ver CFG", command=lambda: open_cfg(self.root, self.report)).pack(side="right", padx=8)
             self.call_tree = ttk.Treeview(call_graph_page, columns=("caller", "callee", "entry"),
                                           show="headings", height=7)
             self.call_tree.heading("caller", text="FUNCIÓN ORIGEN")
@@ -270,12 +278,18 @@ def main(*, run_loop: bool = True):
             if path:
                 self.file_var.set(path)
 
+        def open_agent_panel(self):
+            from .agent_gui import AgentPanel
+            AgentPanel(self.root, self.file_var.get)
+
         def check_tools(self):
             from .doctor import check_environment
             try:
                 info = check_environment()["tools"]
                 lines = [f"{key}: {'Disponible' if value['available'] else 'No instalado / no detectado'}"
                          for key, value in info.items()]
+                if info.get("angr", {}).get("external_python_configured"):
+                    lines.append("angr: Python externo configurado; comprueba su instalación con Probar LIEF/angr.")
                 messagebox.showinfo("Herramientas locales", "\n".join(lines))
             except Exception as exc:
                 messagebox.showerror("Error", str(exc))
@@ -545,10 +559,23 @@ def main(*, run_loop: bool = True):
             self.status_var.set("Informe guardado en " + path)
 
     try:
-        root = tk.Tk()
+        try:
+            from tkinterdnd2 import TkinterDnD
+            root = TkinterDnD.Tk()
+        except ImportError:
+            root = tk.Tk()
     except tk.TclError as exc:
         raise RuntimeError("No graphical desktop is available for Tkinter.") from exc
-    ReverseLabApp(root)
+    app = ReverseLabApp(root)
+    if hasattr(root, "drop_target_register"):
+        from tkinterdnd2 import DND_FILES
+        root.drop_target_register(DND_FILES)
+        def drop(event):
+            paths = root.tk.splitlist(event.data)
+            if len(paths) == 1 and Path(paths[0]).is_file() and not app.busy:
+                app.file_var.set(paths[0])
+                app.status_var.set("Archivo seleccionado · pulsa Analizar para continuar")
+        root.dnd_bind("<<Drop>>", drop)
     if run_loop:
         root.mainloop()
     return root

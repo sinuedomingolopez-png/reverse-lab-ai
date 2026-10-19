@@ -8,6 +8,7 @@ import secrets
 import tempfile
 import time
 from pathlib import Path
+from contextlib import contextmanager
 
 MAX_FILE_BYTES = 32 * 1024 * 1024
 
@@ -61,6 +62,42 @@ class Authorizations:
             if name:
                 Path(name).unlink(missing_ok=True)
 
+    @contextmanager
+    def _transaction(self):
+        """Serialize owner mutations across CLI processes and GUI instances.
+
+        Keep the lock in a separate inode: atomic manifest replacement must not
+        replace the object being locked. Readers see old or new complete JSON.
+        """
+        self.manifest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        with Path(str(self.manifest) + ".lock").open("a+b") as lock:
+            if os.fstat(lock.fileno()).st_size == 0:
+                lock.write(b"\0")
+                lock.flush()
+            deadline = time.monotonic() + 5
+            while True:
+                try:
+                    lock.seek(0)
+                    if os.name == "nt":
+                        import msvcrt
+                        msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+                    else:
+                        import fcntl
+                        fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError:
+                    if time.monotonic() >= deadline:
+                        raise ValueError("another local authorization update is in progress")
+                    time.sleep(0.02)
+            try:
+                yield
+            finally:
+                lock.seek(0)
+                if os.name == "nt":
+                    msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
     def grant(self, target: str | Path, *, root: str | Path,
               content: bool = False, max_bytes: int = MAX_FILE_BYTES,
               lifetime: int = 3600) -> dict:
@@ -73,16 +110,17 @@ class Authorizations:
         if not allowed.is_dir() or not path.is_file() or not path.is_relative_to(allowed):
             raise ValueError("file is outside the allowed directory")
         sha256 = digest_file(path, max_bytes)
-        data = self._read()
-        if len(data["files"]) >= 100:
-            raise ValueError("revoke old grants before authorizing more files")
         item_id = secrets.token_hex(16)
-        data["files"][item_id] = {
-            "path": str(path), "root": str(allowed), "sha256": sha256,
-            "max_bytes": max_bytes, "content": content,
-            "expires_at": time.time() + lifetime,
-        }
-        self._write(data)
+        with self._transaction():
+            data = self._read()
+            if len(data["files"]) >= 100:
+                raise ValueError("revoke old grants before authorizing more files")
+            data["files"][item_id] = {
+                "path": str(path), "root": str(allowed), "sha256": sha256,
+                "max_bytes": max_bytes, "content": content,
+                "expires_at": time.time() + lifetime,
+            }
+            self._write(data)
         return {"id": item_id, "sha256": sha256, "content": content}
 
     def _entry(self, file_id: str) -> dict:
@@ -114,6 +152,7 @@ class Authorizations:
                 if value["expires_at"] > time.time()]
 
     def revoke(self, file_id: str) -> None:
-        data = self._read()
-        data["files"].pop(file_id, None)
-        self._write(data)
+        with self._transaction():
+            data = self._read()
+            data["files"].pop(file_id, None)
+            self._write(data)

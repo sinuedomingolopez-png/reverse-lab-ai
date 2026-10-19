@@ -1,5 +1,6 @@
 """Authentic optional engines, exclusively on generated non-executed inputs."""
 import importlib.util
+import os
 import shutil
 import struct
 import tempfile
@@ -26,7 +27,16 @@ class RealEngines(unittest.TestCase):
             section.characteristics = 0x60000020
             binary.add_section(section)
             pe = root / "generated.exe"
-            binary.get().write(pe)
+            pe_binary = binary.get()
+            pe_binary.add_import("KERNEL32.dll").add_entry("ExitProcess")
+            exports = lief.PE.Export()
+            exports.name = "generated.dll"
+            exports.add_entry("synthetic_helper", 0x1000)
+            pe_binary.set_export(exports)
+            config = lief.PE.Builder.config_t()
+            config.imports = True
+            config.exports = True
+            pe_binary.write(pe, config)
             macho = root / "generated.macho"
             header = struct.pack("<IiiIIIII", 0xFEEDFACF, 0x1000007, 3, 2, 1, 152, 0, 0)
             segment = struct.pack("<II16sQQQQiiII", 0x19, 152, b"__TEXT", 0x100000000,
@@ -41,6 +51,10 @@ class RealEngines(unittest.TestCase):
                 self.assertIn(name, [s["name"] for s in report["sections"]])
                 self.assertIsInstance(report["imports"], list)
                 self.assertIsInstance(report["exports"], list)
+                if path == pe:
+                    self.assertIn("ExitProcess", report["imports"])
+                    self.assertIn("KERNEL32.dll", report["libraries"])
+                    self.assertIn("synthetic_helper", report["exports"])
 
     @unittest.skipUnless(shutil.which("rizin") and shutil.which("rz-bin"), "real Rizin absent")
     def test_rizin_discovers_two_functions(self):
@@ -66,7 +80,7 @@ class RealEngines(unittest.TestCase):
                                 int(e["callee"]["entry"], 16) == 0x40100A
                                 for e in report["call_graph"]))
 
-    @unittest.skipUnless(importlib.util.find_spec("angr"), "real angr absent")
+    @unittest.skipUnless(importlib.util.find_spec("angr") or os.environ.get("REVERSE_LAB_PYTHON"), "real angr absent")
     def test_angr_cfgfast(self):
         from reverse_lab.engine_probe import probe_engine
         self.assertEqual(probe_engine("angr", timeout=120)["status"], "passed")

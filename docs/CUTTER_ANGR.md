@@ -1,5 +1,12 @@
 # Cutter y angr — Reverse Lab AI 0.8
 
+Actualización 0.13: angr actual utiliza Python 3.12+ (`pip install ".[angr]"`).
+Si la interfaz usa otro Python, `REVERSE_LAB_PYTHON` selecciona el intérprete
+externo tanto desde fuentes como desde el portable. Los trabajos MCP añaden
+supervisión del árbol y límites de memoria; las llamadas históricas directas
+del adaptador conservan sus límites de tamaño/tiempo. Ninguna ruta es un sandbox.
+Consulta [versiones y pruebas reales](VALIDATION_0_13.md).
+
 Dos integraciones nuevas **opcionales y locales**. Ninguna instala software automáticamente.
 
 ## Cutter: abrir un ejecutable en una ventana profesional

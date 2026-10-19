@@ -1,0 +1,7 @@
+{
+  "issuer": "https://your-identity-provider.example/realms/reverse-lab",
+  "resource_url": "https://your-dedicated-lab-domain.example/mcp",
+  "jwks": "C:/private/reverse-lab/provider-public-keys.json",
+  "owner_subject": "REPLACE_WITH_YOUR_PROVIDER_SUBJECT",
+  "port": 8765
+}

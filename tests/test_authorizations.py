@@ -1,5 +1,7 @@
 import tempfile
 import unittest
+import threading
+import time
 from pathlib import Path
 
 from reverse_lab.authorizations import Authorizations
@@ -44,3 +46,22 @@ class AuthorizationTests(unittest.TestCase):
         item = self.store.grant(self.target, root=self.root)
         self.assertNotIn(str(self.root), str(self.store.list_files()))
         self.assertNotIn("path", item)
+
+    def test_concurrent_grant_cannot_restore_revoked_permission(self):
+        item = self.store.grant(self.target, root=self.root)
+        other = Authorizations(self.store.manifest)
+        read_done = threading.Event()
+        read = other._read
+        def delayed_read():
+            result = read()
+            read_done.set()
+            time.sleep(0.15)
+            return result
+        other._read = delayed_read
+        worker = threading.Thread(target=lambda: other.grant(self.target, root=self.root))
+        worker.start()
+        self.assertTrue(read_done.wait(3))
+        self.store.revoke(item["id"])
+        worker.join(timeout=3)
+        self.assertFalse(worker.is_alive())
+        self.assertNotIn(item["id"], [entry["id"] for entry in self.store.list_files()])

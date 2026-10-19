@@ -76,6 +76,17 @@ class AnalysisJobs:
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="reverse-lab")
         self._closed = False
+        self._stop_cleanup = threading.Event()
+        self._cleanup = threading.Thread(target=self._cleanup_loop, daemon=True, name="reverse-lab-retention")
+        self._cleanup.start()
+
+    def _cleanup_loop(self):
+        while not self._stop_cleanup.wait(60):
+            with self._lock:
+                for key in list(self._jobs):
+                    job = self._jobs[key]
+                    if job["state"] not in ("queued", "running") and time.monotonic() - job["created"] > 1800:
+                        del self._jobs[key]
 
     def submit(self, file_id: str, backend: str = "basic") -> dict:
         if backend not in BACKENDS:
@@ -136,6 +147,8 @@ class AnalysisJobs:
             job = self._lookup(job_id)
             if job["state"] in ("queued", "running"):
                 job["cancel"].set()
+                if job["state"] == "queued":
+                    job["state"] = "cancelled"
             return self.status(job_id)
 
     def _run(self, job_id: str):
@@ -223,6 +236,8 @@ class AnalysisJobs:
         except Exception:
             job["state"] = "failed"  # never retain private engine exception text
     def close(self):
+        self._stop_cleanup.set()
+        self._cleanup.join(timeout=1)
         with self._lock:
             self._closed = True
             for job in self._jobs.values():

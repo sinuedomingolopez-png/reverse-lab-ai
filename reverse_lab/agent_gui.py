@@ -26,7 +26,7 @@ class AgentPanel:
         frame = ttk.Frame(self.window, padding=20)
         frame.pack(fill="both", expand=True)
         ttk.Label(frame, text="Control local de acceso", font=("Segoe UI", 17, "bold")).pack(anchor="w")
-        ttk.Label(frame, text="ChatGPT: conexión pendiente de prueba real.\n"
+        ttk.Label(frame, text="ChatGPT: comprueba la conexión desde el complemento de tu cuenta.\n"
                   "Solo se comparten los archivos autorizados por ID y hash. Los permisos caducan en una hora.",
                   wraplength=760).pack(anchor="w", pady=12)
         self.share_content = tk.BooleanVar(value=False)
@@ -46,7 +46,7 @@ class AgentPanel:
         lifecycle = ttk.Frame(frame)
         lifecycle.pack(fill="x")
         ttk.Button(lifecycle, text="Iniciar HTTP con configuración…", command=self.start).pack(side="left")
-        ttk.Button(lifecycle, text="Detener agente", command=self.stop).pack(side="left", padx=8)
+        ttk.Button(lifecycle, text="Detener HTTP del panel", command=self.stop).pack(side="left", padx=8)
         self.state = tk.StringVar(value="Agente local: sin iniciar desde este panel")
         ttk.Label(frame, textvariable=self.state, wraplength=760).pack(anchor="w", pady=8)
         self.window.protocol("WM_DELETE_WINDOW", self.close)
